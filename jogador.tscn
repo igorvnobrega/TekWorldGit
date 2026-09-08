@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://b1vmmhkfekpg6"]
+
+[ext_resource type="Script" uid="uid://u3nrr1x2josy" path="res://jogador.gd" id="1_c2wt1"]
+[ext_resource type="Texture2D" uid="uid://bglynevvwxs4x" path="res://assets/Farmer.png" id="1_yuxfx"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_lgngo"]
+radius = 5.0
+height = 10.0
+
+[node name="Jogador" type="CharacterBody2D" unique_id=978886273]
+y_sort_enabled = true
+script = ExtResource("1_c2wt1")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1654385736]
+y_sort_enabled = true
+texture = ExtResource("1_yuxfx")
+offset = Vector2(0, -12)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1130281679]
+y_sort_enabled = true
+shape = SubResource("CapsuleShape2D_lgngo")

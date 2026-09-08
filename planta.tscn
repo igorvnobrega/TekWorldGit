@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://w2h0kjumxcx7"]
+
+[ext_resource type="Script" uid="uid://d3bp0blrcgnem" path="res://planta.gd" id="1_jgas5"]
+[ext_resource type="Texture2D" uid="uid://eophjixeii86" path="res://assets/Plant-export.png" id="2_jgas5"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_g4v7s"]
+radius = 5.0990195
+
+[node name="Planta" type="Area2D" unique_id=1668117510]
+y_sort_enabled = true
+position = Vector2(320, 180)
+script = ExtResource("1_jgas5")
+frame_inicial = 0
+frame_final = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=883959852]
+y_sort_enabled = true
+texture = ExtResource("2_jgas5")
+hframes = 2
+
+[node name="Timer" type="Timer" parent="." unique_id=964323706]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1861149282]
+y_sort_enabled = true
+shape = SubResource("CircleShape2D_g4v7s")

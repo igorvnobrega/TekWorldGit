@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://dmam6y1wh2wvg"]
+
+[ext_resource type="Script" uid="uid://dw611qm7ep3sm" path="res://prensa_oleo.gd" id="1_goxnx"]
+
+[node name="prensa_oleo" type="Area2D" unique_id=987351647]
+script = ExtResource("1_goxnx")
+custo_oleo = 0.0
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1134223146]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1471897329]

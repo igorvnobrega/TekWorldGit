@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://danpn7vc5x3mu"]
+
+[ext_resource type="Texture2D" uid="uid://dofc67vyoy2dt" path="res://assets/cama.png" id="1_cfn2y"]
+[ext_resource type="Script" uid="uid://bhtopoaiv1xlo" path="res://cama.gd" id="1_oqixk"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g4v7s"]
+size = Vector2(24, 15.5)
+
+[node name="Cama" type="Area2D" unique_id=116356729 groups=["Interagiveis"]]
+script = ExtResource("1_oqixk")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=852850377]
+texture = ExtResource("1_cfn2y")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=759413237]
+position = Vector2(0, -0.25)
+shape = SubResource("RectangleShape2D_g4v7s")

@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://ncjwqnreik5c"]
+
+[ext_resource type="Script" uid="uid://b7cu32xi6vp61" path="res://fabrica_flores.gd" id="1_kexrv"]
+[ext_resource type="Texture2D" uid="uid://clsj20ukq0pi6" path="res://assets/plantFarm.png" id="2_7ijnl"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kexrv"]
+size = Vector2(16, 32)
+
+[node name="FabricaFlores" type="Area2D" unique_id=297224131]
+script = ExtResource("1_kexrv")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=545826883]
+texture = ExtResource("2_7ijnl")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2055560859]
+shape = SubResource("RectangleShape2D_kexrv")
+
+[node name="TimerProducao" type="Timer" parent="." unique_id=396472814]
+wait_time = 5.0
+autostart = true
