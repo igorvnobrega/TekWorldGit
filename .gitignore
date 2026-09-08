@@ -1,16 +1,10 @@
-# Godot 4+ specific ignores
+# Godot-specific overrides
 .godot/
-.nomedia
+modules/
 
-# Godot-specific ignores
-.import/
-export.cfg
-export_credentials.cfg
-
-# Imported translations (automatically generated from CSV files)
-*.translation
-
-# Mono-specific ignores
+# Mono-specific overrides (if using C#)
 .mono/
 data_*/
-mono_crash.*.json
+mono_crash_*
+*.csproj
+*.sln
