@@ -4,6 +4,7 @@ class_name PlantaCrescente
 # --- CONFIGURAÇÕES DA PLANTA ---
 @export_group("Dados da Planta")
 @export var nome_planta: String = "Flor Amarela"
+@export var tipo_planta: String = "flor"
 @export var tempo_por_estagio: float = 3.0
 
 @export_group("Configuração Visual")
@@ -40,9 +41,15 @@ func _on_timer_timeout() -> void:
 func definir_posicao_na_grelha(coordenada: Vector2i) -> void:
 	minha_coordenada_grelha = coordenada
 
+
+
+
+
 # A planta agora apenas executa a ordem quando o jogador manda!
 # A planta agora apenas executa a ordem quando o jogador manda!
 func colher_planta() -> void:
+
+	
 	# 1. Adiciona o recurso ao banco de dados global
 	DadosDoJogo.adicionar_recurso("flor_amarela", 1)
 	

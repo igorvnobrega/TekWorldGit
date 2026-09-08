@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="AIAssistantResource" format=3 uid="uid://bp10r4s6tg22w"]
+
+[ext_resource type="Resource" uid="uid://b0fti7g31ugs1" path="res://addons/ai_assistant_hub/llm_providers/gemini.tres" id="1_xubre"]
+[ext_resource type="Script" uid="uid://dc5trusj6raos" path="res://addons/ai_assistant_hub/quick_prompts/ai_quick_prompt_resource.gd" id="2_5edhh"]
+[ext_resource type="Script" uid="uid://b5k4vn5jl8tru" path="res://addons/ai_assistant_hub/assistants/ai_assistant_resource.gd" id="3_op3gt"]
+
+[resource]
+script = ExtResource("3_op3gt")
+type_name = "Gemini 3.6 flash"
+ai_model = "models/gemini-3.6-flash"
+llm_provider = ExtResource("1_xubre")

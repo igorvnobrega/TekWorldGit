@@ -5,6 +5,7 @@ extends HBoxContainer
 @onready var label_sementes: Label = $LabelSementes
 @onready var label_oleo: Label = $LabelOleo
 @onready var label_eletricidade: Label = $LabelEletricidade
+@onready var label_energia: Label = $LabelEnergia
 
 func _ready() -> void:
 	# 1. Atualiza os textos com os valores que começam no DadosDoJogo

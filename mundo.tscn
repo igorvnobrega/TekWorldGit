@@ -58,6 +58,9 @@ layout_mode = 2
 [node name="LabelEletricidade" type="Label" parent="CanvasLayer/PainelTop" unique_id=1025471307]
 layout_mode = 2
 
+[node name="LabelEnergia" type="Label" parent="CanvasLayer/PainelTop" unique_id=1824734362]
+layout_mode = 2
+
 [node name="MenuConstrucao" type="HBoxContainer" parent="CanvasLayer" unique_id=1455925139]
 offset_left = 110.0
 offset_top = 320.0
