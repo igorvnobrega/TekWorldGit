@@ -13,6 +13,9 @@ func _ready() -> void:
 	
 	# 2. Conecta o sinal global para atualizar a UI sempre que algum recurso mudar
 	DadosDoJogo.recurso_alterado.connect(_on_recurso_alterado)
+	
+	# 3. 🌟 Conecta o teu sinal específico de energia!
+	DadosDoJogo.energia_alterada.connect(_on_energia_alterada)
 
 func atualizar_todos_os_valores() -> void:
 	var inv = DadosDoJogo.inventario_global
@@ -21,6 +24,14 @@ func atualizar_todos_os_valores() -> void:
 	label_oleo.text = "🛢️ Óleo: " + str(int(inv["oleo_vegetal"]))
 	label_eletricidade.text = "⚡ Energia: " + str(int(inv["eletricidade"]))
 
+	# 🌟 Mostra o valor inicial da energia assim que o jogo começa
+	label_energia.text = "🔋 Energia: " + str(int(DadosDoJogo.energia_atual)) + "/" + str(int(DadosDoJogo.energia_maxima))
+
+# 🌟 Esta nova função vai correr sempre que a tua energia mudar (quando gastas ou quando usas a cama!)
+func _on_energia_alterada(atual: float, maxima: float) -> void:
+	label_energia.text = "🔋 Energia: " + str(int(atual)) + "/" + str(int(maxima))
+	
+	
 func _on_recurso_alterado(nome_recurso: String, novo_valor: int) -> void:
 	# Quando o sinal global avisa que algo mudou, atualizamos apenas o texto correto
 	match nome_recurso:
@@ -32,3 +43,7 @@ func _on_recurso_alterado(nome_recurso: String, novo_valor: int) -> void:
 			label_oleo.text = "🛢️ Óleo: " + str(int(novo_valor))
 		"eletricidade":
 			label_eletricidade.text = "⚡ Energia: " + str(int(novo_valor))
+		# 🌟 Adiciona este bloco para atualizar o texto no exato momento em que gastas energia ou usas a cama:
+		"energia":
+			label_energia.text = "🔋 Energia: " + str(novo_valor)
+		

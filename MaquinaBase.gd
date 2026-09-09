@@ -23,21 +23,32 @@ func _processar_ciclo_maquina() -> void:
 	var tem_eletricidade = DadosDoJogo.inventario_global["eletricidade"] >= custo_eletricidade
 	var tem_oleo = DadosDoJogo.inventario_global["oleo_vegetal"] >= custo_oleo
 	
-	if tem_eletricidade and tem_oleo:
-		# 2. Consome os recursos globais
+	# 2. Pergunta à máquina filha se ela tem os seus ingredientes extra (as flores)
+	var maquina_pronta = pode_executar()
+	
+	# 🌟 CORREÇÃO: O 'if' agora exige que a maquina_pronta seja TRUE para avançar!
+	if tem_eletricidade and tem_oleo and maquina_pronta:
+		# 3. Consome os recursos globais
 		DadosDoJogo.inventario_global["eletricidade"] -= custo_eletricidade
 		DadosDoJogo.inventario_global["oleo_vegetal"] -= custo_oleo
 		
-		# Força a atualização da UI (Sinal que já tinhas criado!)
+		# Força a atualização da UI
 		DadosDoJogo.recurso_alterado.emit("eletricidade", DadosDoJogo.inventario_global["eletricidade"])
 		DadosDoJogo.recurso_alterado.emit("oleo_vegetal", DadosDoJogo.inventario_global["oleo_vegetal"])
 		
-		# 3. Executa o trabalho específico da máquina
+		# 4. Executa o trabalho específico da máquina
 		executar_trabalho()
 		efeito_visual_sucesso()
+		
+		# Garante que o visual volta a ficar normal e brilhante
+		modulate = Color(1.0, 1.0, 1.0)
 	else:
+		# Se faltar luz, óleo OU flores, ela entra em modo parado e fica escura
 		efeito_visual_parado()
 
+
+func pode_executar() -> bool:
+	return true
 # 🔮 FUNÇÃO MÁGICA: Cada máquina vai reescrever esta função com o seu próprio trabalho!
 func executar_trabalho() -> void:
 	pass

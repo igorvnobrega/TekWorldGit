@@ -9,10 +9,15 @@ extends CharacterBody2D
 
 # --- CONFIGURAÇÕES DE CONSTRUÇÃO ---
 @export var CUSTO_FLORES_FABRICA: int = 10  # 🌟 A fábrica custa 10 flores para ser construída
+@export var CUSTO_SEMENTES_FABRICA: int = 10  # 🌟 A fábrica custa 10 flores para ser construída
+@export var CUSTO_SOLAR_PANEL: int = 10
 
 # --- PRE CARREGAMENTO ---
 const CENA_PLANTA = preload("res://planta.tscn")
 const CENA_FABRICA = preload("res://fabrica_flores.tscn")
+const CENA_FABRICA_OLEO = preload("res://prensa_oleo.tscn")
+const CENA_PAINEL_SOLAR = preload("res://solar_panel.tscn")
+const CENA_TREE_OAK = preload("res://semente_sapling.tscn") 
 
 # --- NOVAS VARIÁVEIS PARA O PREVIEW ---
 var maquina_selecionada_id: String = ""
@@ -77,19 +82,43 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		var pos_rato = get_global_mouse_position()
 		
-		# CLIQUE ESQUERDO
+		# ==========================================
+		# CLIQUE ESQUERDO (Ação / Interação / Plantação)
+		# ==========================================
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if esta_a_construir:
 				executar_construcao(pos_rato)
+			# 🌟 NOVO FILTRO: Se o modo de plantação estiver ativo via menu
 			else:
+				# 🌟 1. TENTA PRIMEIRO COLHER OU INTERAGIR COM ALGO
 				var clicou_em_algo = tentar_interagir_com_objeto(pos_rato)
+				
+				# 🌟 2. APENAS SE NÃO CLICOU EM NADA E O MODO ESTIVER ATIVO, ELE PLANTA!
 				if not clicou_em_algo:
-					plantar_com_o_rato(pos_rato)
-					
-		# CLIQUE DIREITO (Cancena a construção se ativa)
+					if DadosDoJogo.modo_plantacao_ativo and DadosDoJogo.item_selecionado.begins_with("semente"):
+						plantar_com_o_rato(pos_rato)
+		
+		
+			#elif DadosDoJogo.modo_plantacao_ativo and DadosDoJogo.item_selecionado.begins_with("semente"):
+				#plantar_com_o_rato(pos_rato)
+			#else:
+				#var clicou_em_algo = tentar_interagir_com_objeto(pos_rato)
+				## Retiramos o plantar daqui para ele só acontecer quando ativado no menu!
+				#if not clicou_em_algo:
+					#pass 
+
+		# ==========================================
+		# CLIQUE DIREITO (Cancelar Modos Ativos)
+		# ==========================================
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			if esta_a_construir:
 				cancelar_construcao()
+			# 🌟 CANCELAR PLANTAÇÃO: Limpa o estado se clicares com o botão direito
+			elif DadosDoJogo.modo_plantacao_ativo:
+				DadosDoJogo.modo_plantacao_ativo = false
+				DadosDoJogo.item_selecionado = ""
+				print("🚫 Modo de plantação contínua cancelado.")
+
 
 func cancelar_construcao() -> void:
 	esta_a_construir = false
@@ -150,16 +179,52 @@ func tentar_interagir_com_objeto(posicao_clique: Vector2) -> bool:
 	return false
 
 func plantar_com_o_rato(pos_rato: Vector2) -> void:
+	var inv = DadosDoJogo.inventario_global
+	var semente_atual = DadosDoJogo.item_selecionado # 🌟 Deteta qual semente está na mão (ex: "semente_trigo")
+	
+	# Segurança baseada na semente atual
+	if inv[semente_atual] <= 0:
+		DadosDoJogo.modo_plantacao_ativo = false
+		DadosDoJogo.item_selecionado = ""
+		print("🫙 Acabou este tipo de semente!")
+		return
+
 	var x_grelha = int(floor(pos_rato.x / 16.0))
 	var y_grelha = int(floor(pos_rato.y / 16.0))
 	var coordenada_grelha = Vector2i(x_grelha, y_grelha)
 	
 	if DadosDoJogo.esta_celula_livre(coordenada_grelha) and DadosDoJogo.gastar_energia(CUSTO_ENERGIA_PLANTAR):
+		
+		# 🌟 GASTA A SEMENTE CORRETA DINAMICAMENTE!
+		inv[semente_atual] -= 1
+		DadosDoJogo.recurso_alterado.emit(semente_atual, inv[semente_atual])
+		
+		# [Lógica do TileMap...]
 		var chao = get_parent().get_node("Chao") as TileMapLayer
 		if chao:
 			chao.set_cell(coordenada_grelha, 0, Vector2i(1, 0))
 		
-		var nova_planta = CENA_PLANTA.instantiate()
+# 🌟 SELEÇÃO DINÂMICA E SEGURA DA CENA:
+		var nova_planta
+
+		if semente_atual == "semente_tree_oak":
+			# Se a semente na mão for a da árvore, cria o Carvalho
+			nova_planta = CENA_TREE_OAK.instantiate()
+			
+		#elif semente_atual == "semente_trigo":
+			# Se no futuro usares trigo, ele fica isolado aqui
+			#nova_planta = CENA_TRIGO.instantiate() 
+			
+		elif semente_atual == "semente":
+			# Se for a semente padrão, cria a Flor Amarela
+			nova_planta = CENA_PLANTA.instantiate()
+			
+		else:
+			# Linha de segurança caso haja algum erro de texto no menu
+			print("⚠️ Erro: Semente desconhecida na mão: ", semente_atual)
+			return
+	
+	
 		nova_planta.global_position = Vector2((x_grelha * 16) + 8, (y_grelha * 16) + 8)
 		if nova_planta.has_method("definir_posicao_na_grelha"):
 			nova_planta.definir_posicao_na_grelha(coordenada_grelha)
@@ -167,3 +232,7 @@ func plantar_com_o_rato(pos_rato: Vector2) -> void:
 		DadosDoJogo.definir_ocupacao_celula(coordenada_grelha, true)
 		DadosDoJogo.criar_texto_energia(CUSTO_ENERGIA_PLANTAR, nova_planta.global_position)
 		get_parent().add_child(nova_planta)
+		
+		if inv[semente_atual] <= 0:
+			DadosDoJogo.modo_plantacao_ativo = false
+			DadosDoJogo.item_selecionado = ""

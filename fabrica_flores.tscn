@@ -14,7 +14,3 @@ texture = ExtResource("2_7ijnl")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2055560859]
 shape = SubResource("RectangleShape2D_kexrv")
-
-[node name="TimerProducao" type="Timer" parent="." unique_id=396472814]
-wait_time = 5.0
-autostart = true

@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://km3xv8abxq86"]
+
+[ext_resource type="Script" uid="uid://dwnvuvu10wf74" path="res://semente_sapling.gd" id="1_crpbs"]
+[ext_resource type="Texture2D" uid="uid://crjany43l8wni" path="res://assets/tree_oak.png" id="2_00o2w"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_crpbs"]
+height = 32.0
+
+[node name="SementeSapling" type="Area2D" unique_id=1956788648]
+script = ExtResource("1_crpbs")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=762766073]
+texture = ExtResource("2_00o2w")
+
+[node name="Timer" type="Timer" parent="." unique_id=1701119587]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1837839663]
+shape = SubResource("CapsuleShape2D_crpbs")

@@ -1,9 +1,0 @@
-[gd_scene format=3 uid="uid://dsj68ajtm58hk"]
-
-[node name="gerador_energia" type="Area2D" unique_id=769066839]
-
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2064119832]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=948319092]
-
-[node name="Timer" type="Timer" parent="." unique_id=74543476]

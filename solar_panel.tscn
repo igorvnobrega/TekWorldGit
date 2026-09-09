@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://dsj68ajtm58hk"]
+
+[ext_resource type="Script" uid="uid://bceu73ipukj0w" path="res://solar_panel.gd" id="1_6ugyc"]
+[ext_resource type="Texture2D" uid="uid://crmji122t4mqt" path="res://assets/solarPanel.png" id="2_q4hwb"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_e7pmy"]
+size = Vector2(24, 24)
+
+[node name="solar_panel" type="Area2D" unique_id=769066839]
+script = ExtResource("1_6ugyc")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2064119832]
+texture = ExtResource("2_q4hwb")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=948319092]
+shape = SubResource("RectangleShape2D_e7pmy")

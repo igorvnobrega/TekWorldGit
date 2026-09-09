@@ -1,11 +1,17 @@
 [gd_scene format=3 uid="uid://dmam6y1wh2wvg"]
 
 [ext_resource type="Script" uid="uid://dw611qm7ep3sm" path="res://prensa_oleo.gd" id="1_goxnx"]
+[ext_resource type="Texture2D" uid="uid://doyoulsrgmwop" path="res://assets/oleoFarm-export.png" id="2_jj5ny"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fsrwi"]
+size = Vector2(16, 32)
 
 [node name="prensa_oleo" type="Area2D" unique_id=987351647]
 script = ExtResource("1_goxnx")
 custo_oleo = 0.0
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1134223146]
+texture = ExtResource("2_jj5ny")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1471897329]
+shape = SubResource("RectangleShape2D_fsrwi")

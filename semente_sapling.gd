@@ -1,5 +1,5 @@
 extends Area2D
-#class_name PlantaCrescente(serve para tornar global)
+class_name PlantaCrescente
 
 # --- CONFIGURAÇÕES DA PLANTA ---
 @export_group("Dados da Planta")
@@ -51,7 +51,7 @@ func colher_planta() -> void:
 
 	
 	# 1. Adiciona o recurso ao banco de dados global
-	DadosDoJogo.adicionar_recurso("flor_amarela", 1)
+	DadosDoJogo.adicionar_recurso("madeira_oak", 3)
 	
 	# 2. Avisa o cérebro global para libertar IMEDIATAMENTE este espaço na grelha
 	# (Assim o jogador pode voltar a plantar aqui se quiser, mesmo estando em terra)

@@ -8,11 +8,17 @@ signal energia_alterada(nova_energia: float, energia_maxima: float) # 🌟 Garan
 # --- VARIÁVEIS DE INVENTÁRIO ---
 # --- INVENTÁRIO ATUALIZADO ---
 var inventario_global: Dictionary = {
-	"flor_amarela": 0,
+	"flor_amarela": 20,
 	"semente": 20,         # 🌟 Começa com algumas sementes para testar
-	"oleo_vegetal": 5,     # 🌟 Novo recurso lubrificante
-	"eletricidade": 10     # 🌟 Novo recurso de rede (energia elétrica)
+	"oleo_vegetal": 50,     # 🌟 Novo recurso lubrificante
+	"eletricidade": 100,     # 🌟 Novo recurso de rede (energia elétrica)
+	"semente_tree_oak": 0,
+	"madeira_oak": 0
 }
+
+
+var item_selecionado: String = ""
+var modo_plantacao_ativo: bool = false
 
 # --- VARIÁVEIS DE GRELHA ---
 var celulas_ocupadas: Dictionary = {}
@@ -90,8 +96,15 @@ var dados_construcao: Dictionary = {
 	},
 	"prensa_oleo": {
 		"nome": "Prensa de Óleo",
-		"custo_recurso": "flor_amarela",
+		"custo_recurso": "semente",
 		"custo_quantidade": 15,
 		"cena": preload("res://prensa_oleo.tscn") # 🌟 Nova máquina!
+	},
+	
+	"solar_panel": {
+	"nome": "Painel Solar",
+	"custo_recurso": "oleo_vegetal",
+	"custo_quantidade": 15,
+	"cena": preload("res://solar_panel.tscn") # 🌟 Nova máquina!
 	}
 }
