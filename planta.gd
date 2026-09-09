@@ -31,6 +31,8 @@ func _ready() -> void:
 	timer.timeout.connect(_on_timer_timeout)
 	timer.start()
 
+
+
 func _on_timer_timeout() -> void:
 	if frame_atual < frame_final:
 		frame_atual += 1
@@ -74,6 +76,7 @@ func colher_planta() -> void:
 		print("Cenário: A terra descansou e a relva voltou a crescer!")
 	else:
 		print("ERRO: Não encontrou o caminho /root/Mundo/Chao!")
-	
+
+
 	# 5. Só agora, com tudo concluído, é que eliminamos a planta da memória de forma segura!
 	queue_free()

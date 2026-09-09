@@ -7,7 +7,7 @@
 radius = 5.0
 height = 10.0
 
-[node name="Jogador" type="CharacterBody2D" unique_id=978886273]
+[node name="Jogador" type="CharacterBody2D" unique_id=978886273 groups=["Jogador"]]
 y_sort_enabled = true
 script = ExtResource("1_c2wt1")
 

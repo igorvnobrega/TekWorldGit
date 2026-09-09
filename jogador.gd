@@ -83,41 +83,35 @@ func _unhandled_input(event: InputEvent) -> void:
 		var pos_rato = get_global_mouse_position()
 		
 		# ==========================================
-		# CLIQUE ESQUERDO (Ação / Interação / Plantação)
+		# 🟢 CLIQUE ESQUERDO: Interações e Plantação
 		# ==========================================
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if esta_a_construir:
 				executar_construcao(pos_rato)
-			# 🌟 NOVO FILTRO: Se o modo de plantação estiver ativo via menu
+			
+			# 🌟 NOVO FILTRO: Se o modo de plantação estiver ativo pelo menu,
+			# tentamos primeiro colher. Se não colher nada, planta a semente!
+			elif DadosDoJogo.modo_plantacao_ativo and DadosDoJogo.item_selecionado != "":
+				var colheu_objeto = tentar_interagir_com_objeto(pos_rato)
+				if not colheu_objeto:
+					plantar_com_o_rato(pos_rato)
+					
+			# 🌟 FLUXO NORMAL: Se NÃO estiver a plantar nem a construir, 
+			# interage normalmente com as camas, prensas ou colheitas padrão.
 			else:
-				# 🌟 1. TENTA PRIMEIRO COLHER OU INTERAGIR COM ALGO
-				var clicou_em_algo = tentar_interagir_com_objeto(pos_rato)
-				
-				# 🌟 2. APENAS SE NÃO CLICOU EM NADA E O MODO ESTIVER ATIVO, ELE PLANTA!
-				if not clicou_em_algo:
-					if DadosDoJogo.modo_plantacao_ativo and DadosDoJogo.item_selecionado.begins_with("semente"):
-						plantar_com_o_rato(pos_rato)
-		
-		
-			#elif DadosDoJogo.modo_plantacao_ativo and DadosDoJogo.item_selecionado.begins_with("semente"):
-				#plantar_com_o_rato(pos_rato)
-			#else:
-				#var clicou_em_algo = tentar_interagir_com_objeto(pos_rato)
-				## Retiramos o plantar daqui para ele só acontecer quando ativado no menu!
-				#if not clicou_em_algo:
-					#pass 
-
+				tentar_interagir_com_objeto(pos_rato)
+					
 		# ==========================================
-		# CLIQUE DIREITO (Cancelar Modos Ativos)
+		# 🔴 CLIQUE DIREITO: Cancelar Modos Ativos
 		# ==========================================
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			if esta_a_construir:
 				cancelar_construcao()
-			# 🌟 CANCELAR PLANTAÇÃO: Limpa o estado se clicares com o botão direito
+			# 🌟 Se o modo de plantação contínua estiver ativo, limpa o estado
 			elif DadosDoJogo.modo_plantacao_ativo:
 				DadosDoJogo.modo_plantacao_ativo = false
 				DadosDoJogo.item_selecionado = ""
-				print("🚫 Modo de plantação contínua cancelado.")
+				print("🚫 Modo de plantação contínua desativado.")
 
 
 func cancelar_construcao() -> void:
