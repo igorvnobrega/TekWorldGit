@@ -10,16 +10,17 @@ radius = 5.0990195
 y_sort_enabled = true
 position = Vector2(320, 180)
 script = ExtResource("1_jgas5")
-frame_inicial = 0
-frame_final = 1
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=883959852]
 y_sort_enabled = true
 texture = ExtResource("2_jgas5")
 hframes = 2
+frame = 1
 
 [node name="Timer" type="Timer" parent="." unique_id=964323706]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1861149282]
 y_sort_enabled = true
 shape = SubResource("CircleShape2D_g4v7s")
+
+[connection signal="input_event" from="." to="." method="_on_input_event"]

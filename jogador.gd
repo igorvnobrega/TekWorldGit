@@ -78,42 +78,43 @@ func _process(_delta: float) -> void:
 		var y_grelha = int(floor(pos_rato.y / 16.0))
 		preview_fantasma.global_position = Vector2((x_grelha * 16) + 8, (y_grelha * 16) + 8)
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		var pos_rato = get_global_mouse_position()
 		
 		# ==========================================
-		# 🟢 CLIQUE ESQUERDO: Interações e Plantação
+		# 🟢 CLIQUE ESQUERDO
 		# ==========================================
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if esta_a_construir:
 				executar_construcao(pos_rato)
-			
-			# 🌟 NOVO FILTRO: Se o modo de plantação estiver ativo pelo menu,
-			# tentamos primeiro colher. Se não colher nada, planta a semente!
+				get_viewport().set_input_as_handled()
+				
+			# 🌟 A SOLUÇÃO: Só intercepta o clique se o modo de plantação estiver LIGADO pelo menu!
+			# Se o modo estiver desligado, o script do jogador IGNERA o clique, permitindo
+			# que ele desça com 100% de prioridade para a Cama e para a Flor!
 			elif DadosDoJogo.modo_plantacao_ativo and DadosDoJogo.item_selecionado != "":
-				var colheu_objeto = tentar_interagir_com_objeto(pos_rato)
-				if not colheu_objeto:
-					plantar_com_o_rato(pos_rato)
-					
-			# 🌟 FLUXO NORMAL: Se NÃO estiver a plantar nem a construir, 
-			# interage normalmente com as camas, prensas ou colheitas padrão.
+				plantar_com_o_rato(pos_rato)
+				get_viewport().set_input_as_handled()
+				
 			else:
-				tentar_interagir_com_objeto(pos_rato)
-					
+				# Deixa o clique passar limpo para o motor de física do Godot ler a Cama/Flor!
+				pass
+
 		# ==========================================
-		# 🔴 CLIQUE DIREITO: Cancelar Modos Ativos
+		# 🔴 CLIQUE DIREITO (Cancelar Modos)
 		# ==========================================
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			if esta_a_construir:
 				cancelar_construcao()
-			# 🌟 Se o modo de plantação contínua estiver ativo, limpa o estado
+				get_viewport().set_input_as_handled()
 			elif DadosDoJogo.modo_plantacao_ativo:
 				DadosDoJogo.modo_plantacao_ativo = false
 				DadosDoJogo.item_selecionado = ""
-				print("🚫 Modo de plantação contínua desativado.")
-
-
+				print("🚫 Modo de plantação desativado.")
+				get_viewport().set_input_as_handled()
+				
+				
 func cancelar_construcao() -> void:
 	esta_a_construir = false
 	if preview_fantasma:

@@ -1,82 +1,86 @@
-extends Area2D
-#class_name PlantaCrescente(serve para tornar global)
+# planta.gd
+extends MaquinaBase
 
-# --- CONFIGURAÇÕES DA PLANTA ---
-@export_group("Dados da Planta")
-@export var nome_planta: String = "Flor Amarela"
-@export var tipo_planta: String = "flor"
-@export var tempo_por_estagio: float = 3.0
+# 🌟 CORREÇÃO: Agora condiz exatamente com a tua imagem de 2 frames!
+enum Estado { CRESCENDO, MADURO }
+var estado_atual: Estado = Estado.CRESCENDO
 
-@export_group("Configuração Visual")
-@export var frame_inicial: int = 1
-@export var frame_final: int = 2
-#Energia Planta
-@export var custo_energia_colheita: float = 1.0 # 🌟 Planta custa 1 de energia
-# --- REFERÊNCIAS INTERNAS ---
+# Variável de controlo de proximidade
+var jogador_na_area: bool = false
+
 @onready var sprite: Sprite2D = $Sprite2D
-@onready var timer: Timer = $Timer
-
-var frame_atual: int
-var minha_coordenada_grelha: Vector2i
 
 func _ready() -> void:
-	# Regista a planta num grupo global para o jogador a conseguir encontrar via rato
-	add_to_group("Colhiveis")
+	# 1. Configura as variáveis do molde pai
+	custo_eletricidade = 0.0
+	custo_oleo = 0.0
+	tempo_ciclo = 5.0         # Demora 5 segundos a passar de broto para flor madura
 	
-	frame_atual = frame_inicial
-	sprite.frame = frame_atual
+	# 2. Inicializa o molde pai (Isto cria o timer_interno por código!)
+	super._ready()
 	
-	timer.wait_time = tempo_por_estagio
-	timer.one_shot = true
-	timer.timeout.connect(_on_timer_timeout)
-	timer.start()
+	# Garante que começa como broto (Frame 0)
+	atualizar_visual()
 
+# Força o molde pai a dar sempre LUZ VERDE à planta
+func pode_executar() -> bool:
+	return true
 
-
-func _on_timer_timeout() -> void:
-	if frame_atual < frame_final:
-		frame_atual += 1
-		sprite.frame = frame_atual
-		if frame_atual < frame_final:
-			timer.start()
-
-func definir_posicao_na_grelha(coordenada: Vector2i) -> void:
-	minha_coordenada_grelha = coordenada
-
-
-
-
-
-# A planta agora apenas executa a ordem quando o jogador manda!
-# A planta agora apenas executa a ordem quando o jogador manda!
-func colher_planta() -> void:
-
-	
-	# 1. Adiciona o recurso ao banco de dados global
-	DadosDoJogo.adicionar_recurso("flor_amarela", 1)
-	
-	# 2. Avisa o cérebro global para libertar IMEDIATAMENTE este espaço na grelha
-	# (Assim o jogador pode voltar a plantar aqui se quiser, mesmo estando em terra)
-	DadosDoJogo.definir_ocupacao_celula(minha_coordenada_grelha, false)
-	
-	# 3. Encontra o nó do chão que está no Mundo
-	var chao = get_node("/root/Mundo/Chao") as TileMapLayer
-	
-	if chao:
-		# Ocultamos o Sprite da flor imediatamente para dar o efeito visual de que foi colhida!
-		sprite.visible = false
+# 🔮 SUBSTUIÇÃO DA FUNÇÃO MÁGICA: Corre automaticamente após 5 segundos
+func executar_trabalho() -> void:
+	if estado_atual == Estado.CRESCENDO:
+		estado_atual = Estado.MADURO
+		print("🌸 Planta: Ficou totalmente madura! Pronta para colher.")
 		
-		print("Colheita feita! A terra vai descansar por 4 segundos...")
-		
-		# 🌟 A CORREÇÃO DE OURO: O script espera 4 segundos aqui antes de avançar!
-		await get_tree().create_timer(4.0).timeout
-		
-		# 4. Esta linha só roda PASSADOS os 4 segundos!
-		chao.set_cell(minha_coordenada_grelha, 0, Vector2i(0, 0)) # Devolve a Relva (0, 0)
-		print("Cenário: A terra descansou e a relva voltou a crescer!")
-	else:
-		print("ERRO: Não encontrou o caminho /root/Mundo/Chao!")
+		# 🌟 Trava o temporizador para ela parar de correr ciclos
+		if timer_interno:
+			timer_interno.stop()
+			
+	atualizar_visual()
 
+func atualizar_visual() -> void:
+	match estado_atual:
+		Estado.CRESCENDO:
+			sprite.frame = 0 # 🌟 Frame 0: Broto verde (da tua imagem)
+		Estado.MADURO:
+			sprite.frame = 1 # 🌟 Frame 1: Flor amarela (da tua imagem)
 
-	# 5. Só agora, com tudo concluído, é que eliminamos a planta da memória de forma segura!
+# ==========================================================
+# 🟢 CLIQUE DE COLHEITA
+# ==========================================================
+func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if estado_atual == Estado.MADURO and jogador_na_area:
+			get_viewport().set_input_as_handled()
+			colher()
+		else:
+			get_viewport().set_input_as_handled()
+
+func colher() -> void:
+	var inv = DadosDoJogo.inventario_global
+	
+	# 1. Dá os recursos de volta ao saco central
+	inv["flor_amarela"] += 1
+	inv["semente"] += 1
+	DadosDoJogo.recurso_alterado.emit("flor_amarela", inv["flor_amarela"])
+	DadosDoJogo.recurso_alterado.emit("semente", inv["semente"])
+	
+	# 2. 10% de hipótese de bónus de semente extra
+	if randf() <= 0.10:
+		inv["semente"] += 1
+		DadosDoJogo.recurso_alterado.emit("semente", inv["semente"])
+		print("✨ Bónus! Encontraste uma semente extra na colheita!")
+		
+	print("🌸 Colheita realizada com sucesso!")
 	queue_free()
+
+# ==========================================================
+# 🚶 SINAIS FÍSICOS DE PROXIMIDADE
+# ==========================================================
+func _on_area_2d_body_entered(body: Node2D) -> void:
+	if body.has_method("plantar_com_o_rato") or body.name == "Jogador" or body.is_in_group("Jogador"):
+		jogador_na_area = true
+
+func _on_area_2d_body_exited(body: Node2D) -> void:
+	if body.has_method("plantar_com_o_rato") or body.name == "Jogador" or body.is_in_group("Jogador"):
+		jogador_na_area = false
