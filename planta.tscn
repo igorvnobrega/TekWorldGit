@@ -10,6 +10,7 @@ radius = 5.0990195
 y_sort_enabled = true
 position = Vector2(320, 180)
 script = ExtResource("1_jgas5")
+distancia_maxima_interacao = 80.0
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=883959852]
 y_sort_enabled = true
@@ -23,4 +24,4 @@ frame = 1
 y_sort_enabled = true
 shape = SubResource("CircleShape2D_g4v7s")
 
-[connection signal="input_event" from="." to="." method="_on_input_event"]
+[connection signal="input_event" from="." to="." method="_on_area_2d_input_event"]

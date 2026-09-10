@@ -198,7 +198,15 @@ func plantar_com_o_rato(pos_rato: Vector2) -> void:
 		var chao = get_parent().get_node("Chao") as TileMapLayer
 		if chao:
 			chao.set_cell(coordenada_grelha, 0, Vector2i(1, 0))
-		
+			
+			
+		var nova_planta1 = preload("res://planta.tscn").instantiate() # Ou como tiveres o teu spawn
+		nova_planta1.global_position = chao.map_to_local(coordenada_grelha)
+		# 🌟 PASSA A COORDENADA PARA A PLANTA RECORDA-SE DELA
+		if "coordenada_chao" in nova_planta1:
+			nova_planta1.coordenada_chao = coordenada_grelha
+
+		get_parent().add_child(nova_planta1)
 # 🌟 SELEÇÃO DINÂMICA E SEGURA DA CENA:
 		var nova_planta
 

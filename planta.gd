@@ -5,6 +5,7 @@ extends MaquinaBase
 enum Estado { CRESCENDO, MADURO }
 var estado_atual: Estado = Estado.CRESCENDO
 
+var coordenada_chao: Vector2i = Vector2i(-1, -1) 
 # Variável de controlo de proximidade
 var jogador_na_area: bool = false
 
@@ -47,40 +48,44 @@ func atualizar_visual() -> void:
 
 # ==========================================================
 # 🟢 CLIQUE DE COLHEITA
+@export var distancia_maxima_interacao: float = 150.0 
+# ==========================================================
+# ==========================================================
+# 🟢 CLIQUE DE COLHEITA CORRIGIDO
 # ==========================================================
 func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
+	# 🌟 GARANTE QUE SÓ DETETA QUANDO O BOTÃO É PRESSIONADO (evita o evento de soltar o botão)
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if estado_atual == Estado.MADURO and jogador_na_area:
-			get_viewport().set_input_as_handled()
-			colher()
-		else:
-			get_viewport().set_input_as_handled()
-
+		if estado_atual == Estado.MADURO:
+			var jogador = get_tree().get_first_node_in_group("Jogador")
+			if jogador:
+				var distancia = global_position.distance_to(jogador.global_position)
+				if distancia <= distancia_maxima_interacao:
+					get_viewport().set_input_as_handled()
+					colher()
+				else:
+					print("❌ Demasiado longe!")
+				
 func colher() -> void:
 	var inv = DadosDoJogo.inventario_global
 	
-	# 1. Dá os recursos de volta ao saco central
+	# 1. Dá os recursos ao inventário
 	inv["flor_amarela"] += 1
 	inv["semente"] += 1
 	DadosDoJogo.recurso_alterado.emit("flor_amarela", inv["flor_amarela"])
 	DadosDoJogo.recurso_alterado.emit("semente", inv["semente"])
 	
-	# 2. 10% de hipótese de bónus de semente extra
 	if randf() <= 0.10:
 		inv["semente"] += 1
 		DadosDoJogo.recurso_alterado.emit("semente", inv["semente"])
-		print("✨ Bónus! Encontraste uma semente extra na colheita!")
-		
+	
 	print("🌸 Colheita realizada com sucesso!")
+
+	# 2. Transforma a terra de volta em relva IMEDIATAMENTE
+	var chao = get_parent().get_node_or_null("Chao") as TileMapLayer
+	if chao and coordenada_chao != Vector2i(-1, -1):
+		chao.set_cell(coordenada_chao, 0, Vector2i(0, 0)) 
+		print("🌱 O terreno voltou a ser relva!")
+
+	# 3. APAGA A PLANTA IMEDIATAMENTE (Liberta o espaço para replantar instantaneamente)
 	queue_free()
-
-# ==========================================================
-# 🚶 SINAIS FÍSICOS DE PROXIMIDADE
-# ==========================================================
-func _on_area_2d_body_entered(body: Node2D) -> void:
-	if body.has_method("plantar_com_o_rato") or body.name == "Jogador" or body.is_in_group("Jogador"):
-		jogador_na_area = true
-
-func _on_area_2d_body_exited(body: Node2D) -> void:
-	if body.has_method("plantar_com_o_rato") or body.name == "Jogador" or body.is_in_group("Jogador"):
-		jogador_na_area = false
