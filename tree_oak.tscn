@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://km3xv8abxq86"]
+
+[ext_resource type="Script" uid="uid://dwnvuvu10wf74" path="res://tree_oak.gd" id="1_8inuh"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_crpbs"]
+load_path = "res://.godot/imported/tree_oak.png-368ded38fce732fe27169cb882edef2b.ctex"
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_crpbs"]
+height = 32.0
+
+[node name="treeOak" type="Area2D" unique_id=1956788648]
+script = ExtResource("1_8inuh")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=762766073]
+position = Vector2(0, -16)
+texture = SubResource("CompressedTexture2D_crpbs")
+hframes = 3
+
+[node name="Timer" type="Timer" parent="." unique_id=1701119587]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1837839663]
+position = Vector2(0, -16)
+shape = SubResource("CapsuleShape2D_crpbs")
+
+[connection signal="input_event" from="." to="." method="_on_area_2d_input_event"]

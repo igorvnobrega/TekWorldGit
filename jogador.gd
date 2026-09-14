@@ -17,7 +17,8 @@ const CENA_PLANTA = preload("res://planta.tscn")
 const CENA_FABRICA = preload("res://fabrica_flores.tscn")
 const CENA_FABRICA_OLEO = preload("res://prensa_oleo.tscn")
 const CENA_PAINEL_SOLAR = preload("res://solar_panel.tscn")
-const CENA_TREE_OAK = preload("res://semente_sapling.tscn") 
+const CENA_TREE_OAK = preload("res://tree_oak.tscn") 
+const CENA_PLANT_FIBER = preload("res://plant_string.tscn")
 
 # --- NOVAS VARIÁVEIS PARA O PREVIEW ---
 var maquina_selecionada_id: String = ""
@@ -113,7 +114,10 @@ func _input(event: InputEvent) -> void:
 				DadosDoJogo.item_selecionado = ""
 				print("🚫 Modo de plantação desativado.")
 				get_viewport().set_input_as_handled()
-				
+			else:
+				# 🌟 AJUSTE: Tenta interagir com a máquina se os outros modos estiverem desligados
+				if tentar_interagir_com_objeto(pos_rato):
+					get_viewport().set_input_as_handled()
 				
 func cancelar_construcao() -> void:
 	esta_a_construir = false
@@ -152,7 +156,7 @@ func executar_construcao(pos_rato: Vector2) -> void:
 
 # --- INTERAÇÕES TRADICIONAIS (Mantém o teu código base de busca) ---
 func tentar_interagir_com_objeto(posicao_clique: Vector2) -> bool:
-	# 1. Verifica plantas colhíveis
+	# 1. Verifica plantas colhíveis (Teu código base)
 	var objetos = get_tree().get_nodes_in_group("Colhiveis")
 	for obj in objetos:
 		if obj is Area2D and obj.global_position.distance_to(posicao_clique) < 12.0:
@@ -164,20 +168,40 @@ func tentar_interagir_com_objeto(posicao_clique: Vector2) -> bool:
 					DadosDoJogo.criar_texto_energia(custo, obj.global_position)
 				return true
 				
-	# 2. Verifica móveis/camas interagíveis
+	# 2. Verifica móveis/camas interagíveis (Teu código base)
 	var interagiveis = get_tree().get_nodes_in_group("Interagiveis")
 	for obj in interagiveis:
 		if obj is Area2D and obj.global_position.distance_to(posicao_clique) < 16.0:
 			if global_position.distance_to(obj.global_position) <= ALCANCE_INTERACAO and obj.has_method("usar_cama"):
 				obj.usar_cama()
 				return true
+
+	# 🗺️ 3. INTERAÇÃO COM MÁQUINAS (ON/OFF E RECEITAS!)
+	var maquinas = get_tree().get_nodes_in_group("Maquinas")
+	for maq in maquinas:
+		# Verifica se o clique do rato atingiu o raio da máquina (16 pixéis)
+		if maq is Area2D and maq.global_position.distance_to(posicao_clique) < 16.0:
+			# Verifica se o teu personagem está perto o suficiente para tocar nela
+			if global_position.distance_to(maq.global_position) <= ALCANCE_INTERACAO:
+				
+				# 🌟 NOVO ENCAIXE: Se for a Fundição (ou seja, tem a variável receita_atual_id), abre o menu de receitas!
+				if "receita_atual_id" in maq:
+					var menu_fun = get_node_or_null("/root/Mundo/CanvasLayer/MenuFundicao")
+					if menu_fun:
+						menu_fun.abrir_menu(maq) # Abre o menu e passa esta máquina específica para ser configurada
+						return true
+				
+				# 🟢 SE NÃO FOR UMA FUNDIÇÃO: Corre o interruptor normal On/Off que já tinhas!
+				if maq.has_method("alternar_estado"):
+					maq.alternar_estado() 
+					return true
+					
 	return false
 
 func plantar_com_o_rato(pos_rato: Vector2) -> void:
 	var inv = DadosDoJogo.inventario_global
-	var semente_atual = DadosDoJogo.item_selecionado # 🌟 Deteta qual semente está na mão (ex: "semente_trigo")
+	var semente_atual = DadosDoJogo.item_selecionado 
 	
-	# Segurança baseada na semente atual
 	if inv[semente_atual] <= 0:
 		DadosDoJogo.modo_plantacao_ativo = false
 		DadosDoJogo.item_selecionado = ""
@@ -190,48 +214,39 @@ func plantar_com_o_rato(pos_rato: Vector2) -> void:
 	
 	if DadosDoJogo.esta_celula_livre(coordenada_grelha) and DadosDoJogo.gastar_energia(CUSTO_ENERGIA_PLANTAR):
 		
-		# 🌟 GASTA A SEMENTE CORRETA DINAMICAMENTE!
 		inv[semente_atual] -= 1
 		DadosDoJogo.recurso_alterado.emit(semente_atual, inv[semente_atual])
 		
-		# [Lógica do TileMap...]
 		var chao = get_parent().get_node("Chao") as TileMapLayer
 		if chao:
 			chao.set_cell(coordenada_grelha, 0, Vector2i(1, 0))
-			
-			
-		var nova_planta1 = preload("res://planta.tscn").instantiate() # Ou como tiveres o teu spawn
-		nova_planta1.global_position = chao.map_to_local(coordenada_grelha)
-		# 🌟 PASSA A COORDENADA PARA A PLANTA RECORDA-SE DELA
-		if "coordenada_chao" in nova_planta1:
-			nova_planta1.coordenada_chao = coordenada_grelha
-
-		get_parent().add_child(nova_planta1)
-# 🌟 SELEÇÃO DINÂMICA E SEGURA DA CENA:
-		var nova_planta
+		else:
+			print("chao errado")
+			return
+		# 🌟 SELEÇÃO DINÂMICA E SEGURA DA CENA:
+		var nova_planta = null
 
 		if semente_atual == "semente_tree_oak":
-			# Se a semente na mão for a da árvore, cria o Carvalho
 			nova_planta = CENA_TREE_OAK.instantiate()
-			
-		#elif semente_atual == "semente_trigo":
-			# Se no futuro usares trigo, ele fica isolado aqui
-			#nova_planta = CENA_TRIGO.instantiate() 
-			
 		elif semente_atual == "semente":
-			# Se for a semente padrão, cria a Flor Amarela
 			nova_planta = CENA_PLANTA.instantiate()
-			
+		elif semente_atual == "seed_string":
+			nova_planta = CENA_PLANT_FIBER.instantiate()
 		else:
-			# Linha de segurança caso haja algum erro de texto no menu
 			print("⚠️ Erro: Semente desconhecida na mão: ", semente_atual)
 			return
 	
-	
+		# Posiciona e configura a única planta criada
 		nova_planta.global_position = Vector2((x_grelha * 16) + 8, (y_grelha * 16) + 8)
+		
+		# 🌟 PASSA A COORDENADA PARA A PLANTA SE LEMBRAR DELA
+		if "coordenada_chao" in nova_planta:
+			nova_planta.coordenada_chao = coordenada_grelha
+			
 		if nova_planta.has_method("definir_posicao_na_grelha"):
 			nova_planta.definir_posicao_na_grelha(coordenada_grelha)
 			
+		# Regista a ocupação e adiciona à cena
 		DadosDoJogo.definir_ocupacao_celula(coordenada_grelha, true)
 		DadosDoJogo.criar_texto_energia(CUSTO_ENERGIA_PLANTAR, nova_planta.global_position)
 		get_parent().add_child(nova_planta)

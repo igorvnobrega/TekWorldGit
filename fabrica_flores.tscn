@@ -9,8 +9,9 @@ size = Vector2(16, 32)
 [node name="FabricaFlores" type="Area2D" unique_id=297224131]
 script = ExtResource("1_kexrv")
 
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=545826883]
+[node name="IndicadorOnOff" type="Sprite2D" parent="." unique_id=545826883]
 texture = ExtResource("2_7ijnl")
+hframes = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2055560859]
 shape = SubResource("RectangleShape2D_kexrv")

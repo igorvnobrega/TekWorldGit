@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://dgygd562d34ff"]
+
+[ext_resource type="Texture2D" uid="uid://bdn0886ktnshe" path="res://assets/IronTile-export.png" id="1_b84mb"]
+[ext_resource type="Script" uid="uid://c6vwb23cxohj1" path="res://rock_iron.gd" id="1_q448q"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_68h2w"]
+size = Vector2(16, 16)
+
+[node name="rock_iron" type="Area2D" unique_id=263810986]
+script = ExtResource("1_q448q")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=933116120]
+texture = ExtResource("1_b84mb")
+hframes = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1481682925]
+shape = SubResource("RectangleShape2D_68h2w")
+
+[connection signal="input_event" from="." to="." method="_on_area_2d_input_event"]

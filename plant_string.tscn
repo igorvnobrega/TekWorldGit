@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://sm6x01wunrs0"]
+
+[ext_resource type="Script" uid="uid://cubxuwhp8p2hh" path="res://plant_string.gd" id="1_upvmq"]
+[ext_resource type="Texture2D" uid="uid://dwa6u2ifubqj0" path="res://assets/PlantStringTile.png" id="2_nurno"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_d35w7"]
+radius = 8.0
+height = 18.0
+
+[node name="PlantString" type="Area2D" unique_id=514938337]
+script = ExtResource("1_upvmq")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1061828195]
+y_sort_enabled = true
+position = Vector2(0, -8)
+texture = ExtResource("2_nurno")
+hframes = 3
+
+[node name="Timer" type="Timer" parent="." unique_id=1907986496]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=957849591]
+position = Vector2(0, -9)
+shape = SubResource("CapsuleShape2D_d35w7")
+
+[connection signal="input_event" from="." to="." method="_on_area_2d_input_event"]

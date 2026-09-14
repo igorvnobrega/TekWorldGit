@@ -10,8 +10,9 @@ size = Vector2(16, 32)
 script = ExtResource("1_goxnx")
 custo_oleo = 0.0
 
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1134223146]
+[node name="IndicadorOnOff" type="Sprite2D" parent="." unique_id=1134223146]
 texture = ExtResource("2_jj5ny")
+hframes = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1471897329]
 shape = SubResource("RectangleShape2D_fsrwi")

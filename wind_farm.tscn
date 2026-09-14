@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://bpkiqu7hrfewp"]
+
+[ext_resource type="Texture2D" uid="uid://ng7dpeckgodw" path="res://assets/WindFarm-export.png" id="1_2p2ql"]
+[ext_resource type="Script" uid="uid://bn6qpb3ja43l5" path="res://wind_farm.gd" id="1_dljf8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_s18vt"]
+size = Vector2(16, 32)
+
+[node name="wind_farm" type="Area2D" unique_id=788792291]
+script = ExtResource("1_dljf8")
+
+[node name="IndicadorOnOff" type="Sprite2D" parent="." unique_id=718838426]
+texture = ExtResource("1_2p2ql")
+hframes = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1863158848]
+shape = SubResource("RectangleShape2D_s18vt")

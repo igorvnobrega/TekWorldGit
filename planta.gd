@@ -1,6 +1,6 @@
 # planta.gd
 extends MaquinaBase
-
+class_name PlantaCrescente
 # 🌟 CORREÇÃO: Agora condiz exatamente com a tua imagem de 2 frames!
 enum Estado { CRESCENDO, MADURO }
 var estado_atual: Estado = Estado.CRESCENDO
@@ -79,13 +79,37 @@ func colher() -> void:
 		inv["semente"] += 1
 		DadosDoJogo.recurso_alterado.emit("semente", inv["semente"])
 	
-	print("🌸 Colheita realizada com sucesso!")
+	print("🌸 Colheita realizada com sucesso! A libertar o espaço...")
 
-	# 2. Transforma a terra de volta em relva IMEDIATAMENTE
+	# 2. LIBERTA O ESPAÇO IMEDIATAMENTE
 	var chao = get_parent().get_node_or_null("Chao") as TileMapLayer
-	if chao and coordenada_chao != Vector2i(-1, -1):
-		chao.set_cell(coordenada_chao, 0, Vector2i(0, 0)) 
-		print("🌱 O terreno voltou a ser relva!")
+	if chao:
+		# 🌟 GARANTIA: Se a coordenada ainda for a padrão, calcula imediatamente antes de avançar
+		if coordenada_chao == Vector2i(-1, -1):
+			coordenada_chao = chao.local_to_map(global_position)
+		
+		# Liberta a célula no sistema global do teu jogo
+		DadosDoJogo.definir_ocupacao_celula(coordenada_chao, false)
+		
+		# Configura o tempo que a terra fica visível (ex: 3 segundos)
+		var segundos_em_terra: float = 3.0 
+		
+		# Guardamos a coordenada exata nesta variável para o timer não a perder
+		var posicao_alvo = coordenada_chao
+		
+		get_tree().create_timer(segundos_em_terra).timeout.connect(
+			func():
+				if is_instance_valid(chao):
+					# 🌟 SINTAXE CORRETA PARA TILEMAPLAYER: Passa apenas a coordenada!
+					var tile_atual = chao.get_cell_atlas_coords(posicao_alvo)
+					
+					# Se o bloco ATUAL ainda for Terra (Vector2i(1, 0)), muda para Relva!
+					if tile_atual == Vector2i(1, 0):
+						chao.set_cell(posicao_alvo, 0, Vector2i(0, 0)) 
+						print("🌱 O terreno respirou e voltou a ser relva!")
+					else:
+						print("ℹ️ O terreno não mudou porque o bloco já não é terra. Tile atual: ", tile_atual)
+		)
 
-	# 3. APAGA A PLANTA IMEDIATAMENTE (Liberta o espaço para replantar instantaneamente)
+	# 3. APAGA A PLANTA IMEDIATAMENTE
 	queue_free()

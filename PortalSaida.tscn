@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://buoixq103e8s7"]
+
+[ext_resource type="Script" uid="uid://cg024hdkqbeup" path="res://portal_saida.gd" id="1_4vnra"]
+[ext_resource type="Texture2D" uid="uid://rctsuhi6t1g3" path="res://assets/portal.png" id="1_8jnne"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_axuh4"]
+radius = 16.0
+
+[node name="PortalSaida" type="Area2D" unique_id=1948036718]
+script = ExtResource("1_4vnra")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2019964065]
+texture = ExtResource("1_8jnne")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=732518506]
+shape = SubResource("CircleShape2D_axuh4")
+
+[connection signal="input_event" from="." to="." method="_on_input_event"]

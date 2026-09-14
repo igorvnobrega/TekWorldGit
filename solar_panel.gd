@@ -1,4 +1,4 @@
-# prensa_oleo.gd
+
 extends MaquinaBase
 
 func _ready() -> void:

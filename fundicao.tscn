@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://depam14rl2xpx"]
+
+[ext_resource type="Script" uid="uid://dx6dnkl786de1" path="res://fundicao.gd" id="1_vs1xy"]
+[ext_resource type="Texture2D" uid="uid://ce3f2xovsoxif" path="res://assets/fundicao-export.png" id="2_k7hu2"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_k7hu2"]
+size = Vector2(29.5, 23)
+
+[node name="fundicao" type="Area2D" unique_id=82655501]
+script = ExtResource("1_vs1xy")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=431458352]
+texture = ExtResource("2_k7hu2")
+hframes = 2
+
+[node name="IndicadorOnOff" type="Sprite2D" parent="." unique_id=1035556682]
+hframes = 2
+
+[node name="IconeProducao" type="Sprite2D" parent="." unique_id=1324777113]
+z_index = 2
+y_sort_enabled = true
+position = Vector2(-3, 5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2125788357]
+position = Vector2(0, 5)
+shape = SubResource("RectangleShape2D_k7hu2")
