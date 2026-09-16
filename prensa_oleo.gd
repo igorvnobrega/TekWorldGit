@@ -25,7 +25,7 @@ func executar_trabalho() -> void:
 	DadosDoJogo.recurso_alterado.emit("flor_amarela", inv["flor_amarela"])
 	
 	# Produz o óleo vegetal
-	inv["oleo_vegetal"] += 2
+	inv["oleo_vegetal"] += 10
 	DadosDoJogo.recurso_alterado.emit("oleo_vegetal", inv["oleo_vegetal"])
 	
 	print("🛢️ Prensa de Óleo: 5 Flores transformadas com sucesso em 1 Óleo Vegetal!")

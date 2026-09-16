@@ -60,6 +60,33 @@ var inventario_global: Dictionary = {
 	"ingot_iron": 0
 	
 }
+
+# ==========================================================
+# 🗣️ DICIONÁRIO DE TRADUÇÃO DE RECURSOS PARA O JOGADOR
+# ==========================================================
+func obter_nome_real_do_recurso(id_recurso: String) -> String:
+	match id_recurso:
+		"madeira_oak":
+			return "Madeira Oak"
+		"flor_amarela":
+			return "Flor Amarela"
+		"semente":
+			return "Semente Flor"
+		"seed_string":
+			return "Semente de Fibra"
+		"semente_tree_oak":
+			return "Semente de Carvalho"
+		"oleo_vegetal":
+			return "Óleo Vegetal"
+		"barra_ferro":
+			return "Barra de Ferro"
+		"energia":
+			return "Energia"
+		_:
+			# Caso te esqueças de traduzir algum recurso, 
+			# o Godot apenas embeleza o texto original como salvaguarda
+			return id_recurso.capitalize().replace("_", " ")
+
 # 🎒 A nossa mochila temporária para as expedições
 var mochila_expedicao = {
 	"pedra": 0,
@@ -125,6 +152,9 @@ func limpar_todas_as_ocupacoes_da_expedicao() -> void:
 		celulas_ocupadas.clear()
 	print("🧹 Grelha de ocupação limpa para evitar colisões fantasmas na base!")
 
+
+
+
 # --- EFEITOS VISUAIS (Adicionar no fim do DadosDoJogo.gd) ---
 func criar_texto_energia(quantidade: float, posicao_mundo: Vector2) -> void:
 	# Cria um nó de texto dinamicamente
@@ -156,35 +186,38 @@ func criar_texto_energia(quantidade: float, posicao_mundo: Vector2) -> void:
 var dados_construcao: Dictionary = {
 	"fabrica_flores": {
 		"nome": "Fábrica de Flores",
-		"custo_recurso": "flor_amarela",
-		"custo_quantidade": 10,
+		"custos": { "flor_amarela": 10, "madeira_oak": 5 },
+		"input": { "oleo_vegetal": 1 },
+		"output": { "flor_amarela": 1 }, 
 		"cena": preload("res://fabrica_flores.tscn")
 	},
 	"prensa_oleo": {
 		"nome": "Prensa de Óleo",
-		"custo_recurso": "semente",
-		"custo_quantidade": 15,
-		"cena": preload("res://prensa_oleo.tscn") # 🌟 Nova máquina!
+		"custos": { "semente": 15 },
+		"input": { "semente": 2 },
+		"output": { "oleo_vegetal": 1 },
+		"cena": preload("res://prensa_oleo.tscn")
 	},
-	
 	"solar_panel": {
-	"nome": "Painel Solar",
-	"custo_recurso": "oleo_vegetal",
-	"custo_quantidade": 15,
-	"cena": preload("res://solar_panel.tscn") # 🌟 Nova máquina!
+		"nome": "Painel Solar",
+		"custos": { "oleo_vegetal": 15, "barra_ferro": 2 },
+		"input": {}, # Sem input (energia grátis!)
+		"output": { "energia": 5 },
+		"cena": preload("res://solar_panel.tscn")
 	},
-		"wind_farm": {
-	"nome": "Wind Farm",
-	"custo_recurso": "oleo_vegetal",
-	"custo_quantidade": 15,
-	"cena": preload("res://wind_farm.tscn") # 🌟 Nova máquina!
+	"wind_farm": {
+		"nome": "Wind Farm",
+		"custos": {"madeira_oak": 15},
+		"input": {"oleo_vegetal": 1}, # Sem input (energia grátis!)
+		"output": { "energia": 5 },
+		"cena": preload("res://wind_farm.tscn")
 	},
-	
 	"fundicao": {
-	"nome": "Smelter",
-	"custo_recurso": "oleo_vegetal",
-	"custo_quantidade": 15,
-	"cena": preload("res://fundicao.tscn") # 🌟 Nova máquina!
+		"nome": "Smelter",
+		"custos": {"oleo_vegetal": 15},
+		"input": {"ore": 2}, # Sem input (energia grátis!)
+		"output": {},
+		"cena": preload("res://fundicao.tscn")
 	}
 }
 # 2. O Banco de Dados de Receitas da Fundição

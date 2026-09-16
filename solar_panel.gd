@@ -17,7 +17,7 @@ func executar_trabalho() -> void:
 	var inv = DadosDoJogo.inventario_global
 
 	# Produz o Electricidade
-	inv["eletricidade"] += 1
+	inv["eletricidade"] += 5
 	DadosDoJogo.recurso_alterado.emit("eletricidade", inv["eletricidade"])
 	
 	modulate = Color(1, 1, 1)

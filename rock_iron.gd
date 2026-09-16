@@ -29,14 +29,14 @@ func colher() -> void:
 	var mochila = DadosDoJogo.mochila_expedicao
 	
 	# 1. Dá os recursos à mochila em vez do inventário global
-	mochila["ferro"] += 1
+	mochila["ore_iron"] += 1
 	
 	# ⚠️ NOTA DE UI: Como o teu PainelTop atual lê o 'inventario_global',
 	# os números no ecrã não vão subir enquanto minas (o que faz sentido, estão na mochila!).
 	# Se quiseres ver os números da mochila a subir na UI da mina, 
 	# criaremos depois um sinal específico como 'recurso_mochila_alterado'.
 	
-	print("⛏️ Picaste a ferro! Tens ", mochila["ferro"], " na mochila.")
+	print("⛏️ Picaste a ferro! Tens ", mochila["ore_iron"], " na mochila.")
 
 	# 2. Avança o estado baseado no clique (código de ifs/elifs que já tens...)
 	if estado_atual == Estado.INTEIRA:

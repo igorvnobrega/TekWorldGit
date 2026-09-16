@@ -8,10 +8,19 @@
 [ext_resource type="Script" uid="uid://de83m64rwwpc3" path="res://painel_top.gd" id="5_5ckkb"]
 [ext_resource type="Script" uid="uid://b6icih7tcxj6t" path="res://menu_expedicoes.gd" id="5_pij3u"]
 [ext_resource type="Script" uid="uid://djjn2jgyncpg1" path="res://menu_construcao.gd" id="7_2hh7m"]
-[ext_resource type="Script" uid="uid://b8arclakev3lo" path="res://botao_expedicao.gd" id="7_pij3u"]
 [ext_resource type="FontFile" uid="uid://cd823w5okugsr" path="res://Fonts/m5x7.ttf" id="7_t8jxu"]
+[ext_resource type="Texture2D" uid="uid://b5h13dxwycjxm" path="res://assets/BackgroundPanelContainerUI.png" id="8_sxlx8"]
+[ext_resource type="Script" uid="uid://dslt0c6vrg3a6" path="res://BotaoConstrucaoComTooltip.gd" id="9_5g5eo"]
+[ext_resource type="Texture2D" uid="uid://bus8wdf5ldjag" path="res://icones/icon_Flower.png" id="9_lwdvv"]
+[ext_resource type="PackedScene" uid="uid://dru27fyrxyupa" path="res://TooltipCustom.tscn" id="10_lwdvv"]
 [ext_resource type="Script" uid="uid://du57gprlr1b2m" path="res://menu_fundicao.gd" id="12_57gmc"]
+[ext_resource type="Texture2D" uid="uid://ffouj21c2efp" path="res://icones/icon_vOil.png" id="12_lwdvv"]
 [ext_resource type="Script" uid="uid://j5p64a32cdy5" path="res://contracto.gd" id="13_0crsg"]
+[ext_resource type="Texture2D" uid="uid://y0i81sammgj5" path="res://icones/icon_electricidade.png" id="13_j2eq6"]
+[ext_resource type="Texture2D" uid="uid://br6do7bdw30e5" path="res://icones/icon_tree_sapling.png" id="14_0hui5"]
+[ext_resource type="Texture2D" uid="uid://bceokyy6402xq" path="res://icones/icon_seed.png" id="15_sxlx8"]
+[ext_resource type="Texture2D" uid="uid://devlk4gxo262t" path="res://icones/icon_string_seed.png" id="16_wnkqi"]
+[ext_resource type="Texture2D" uid="uid://cerbdod4sfhf8" path="res://icones/IconIronIngot.png" id="17_0hui5"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_aou4a"]
 texture = ExtResource("1_otwa2")
@@ -20,6 +29,22 @@ texture = ExtResource("1_otwa2")
 
 [sub_resource type="TileSet" id="TileSet_yf5fn"]
 sources/0 = SubResource("TileSetAtlasSource_aou4a")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sxlx8"]
+texture = ExtResource("8_sxlx8")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_0hui5"]
+content_margin_left = 2.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+content_margin_bottom = 1.0
+texture = ExtResource("8_sxlx8")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+
+[sub_resource type="Theme" id="Theme_7igo7"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0crsg"]
 border_width_left = 1
@@ -68,6 +93,17 @@ position = Vector2(102, 165)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=436019645]
 
+[node name="BotaoBuildPrincipal" type="Button" parent="CanvasLayer" unique_id=1451697728]
+offset_left = 254.0
+offset_top = 337.0
+offset_right = 286.0
+offset_bottom = 358.0
+focus_mode = 0
+theme_override_fonts/font = ExtResource("7_t8jxu")
+theme_override_styles/normal = SubResource("StyleBoxTexture_sxlx8")
+text = "Build
+"
+
 [node name="MenuExpedicoes" type="Control" parent="CanvasLayer" unique_id=1920264040]
 visible = false
 layout_mode = 3
@@ -97,84 +133,142 @@ text = "Expediçao Pedra"
 layout_mode = 2
 text = "Fechar"
 
-[node name="MenuConstrucao" type="HBoxContainer" parent="CanvasLayer" unique_id=1455925139]
-offset_left = 110.0
-offset_top = 332.0
-offset_right = 269.0
-offset_bottom = 363.0
-size_flags_horizontal = 4
-size_flags_vertical = 8
+[node name="MenuConstrucao" type="PanelContainer" parent="CanvasLayer" unique_id=233752948]
+offset_left = 254.0
+offset_top = 257.0
+offset_right = 436.0
+offset_bottom = 337.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxTexture_0hui5")
 script = ExtResource("7_2hh7m")
 
-[node name="BotaoFabrica" type="Button" parent="CanvasLayer/MenuConstrucao" unique_id=1544165023]
+[node name="JanelaScroll" type="ScrollContainer" parent="CanvasLayer/MenuConstrucao" unique_id=499922655]
 layout_mode = 2
-focus_mode = 0
-theme_override_fonts/font = ExtResource("7_t8jxu")
-text = "fabrica"
 
-[node name="BotaoFundicao" type="Button" parent="CanvasLayer/MenuConstrucao" unique_id=1405684318]
-layout_mode = 2
-focus_mode = 0
-theme_override_fonts/font = ExtResource("7_t8jxu")
-text = "Smelter
-"
-
-[node name="BotaoWind" type="Button" parent="CanvasLayer/MenuConstrucao" unique_id=1286918248]
-layout_mode = 2
-focus_mode = 0
-theme_override_fonts/font = ExtResource("7_t8jxu")
-text = "Wind Farm
-"
-
-[node name="BotaoSolar" type="Button" parent="CanvasLayer/MenuConstrucao" unique_id=1187613231]
-layout_mode = 2
-focus_mode = 0
-theme_override_fonts/font = ExtResource("7_t8jxu")
-text = "solar"
-
-[node name="BotaoOleo" type="Button" parent="CanvasLayer/MenuConstrucao" unique_id=1048875200]
-layout_mode = 2
-focus_mode = 0
-theme_override_fonts/font = ExtResource("7_t8jxu")
-text = "oleo"
-
-[node name="MenuSementes" type="HBoxContainer" parent="CanvasLayer/MenuConstrucao" unique_id=1637465971]
+[node name="ListaDeTiers" type="HBoxContainer" parent="CanvasLayer/MenuConstrucao/JanelaScroll" unique_id=1637465971]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 
-[node name="BotaoTreeOak" type="Button" parent="CanvasLayer/MenuConstrucao/MenuSementes" unique_id=523127133]
+[node name="Coluna_Tier1" type="VBoxContainer" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers" unique_id=32354554]
 layout_mode = 2
-focus_mode = 0
-theme_override_fonts/font = ExtResource("7_t8jxu")
-text = "Tree oak"
 
-[node name="BotaoFlor" type="Button" parent="CanvasLayer/MenuConstrucao/MenuSementes" unique_id=1845776166]
+[node name="LabelTier1" type="Label" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier1" unique_id=321575191]
 layout_mode = 2
-focus_mode = 0
 theme_override_fonts/font = ExtResource("7_t8jxu")
-text = "Flor
-"
+text = "Tier 1"
 
-[node name="BotaoFiber" type="Button" parent="CanvasLayer/MenuConstrucao/MenuSementes" unique_id=1060319781]
+[node name="GridTier1" type="GridContainer" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier1" unique_id=1600119161]
 layout_mode = 2
-focus_mode = 0
-theme_override_fonts/font = ExtResource("7_t8jxu")
-text = "Fiber
-"
+columns = 3
 
-[node name="BotaoExpedicao" type="Button" parent="CanvasLayer/MenuConstrucao" unique_id=695886058]
+[node name="BotaoFabrica" type="Button" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier1/GridTier1" unique_id=1544165023]
+layout_mode = 2
+tooltip_text = " "
+focus_mode = 0
+theme_override_fonts/font = ExtResource("7_t8jxu")
+icon = ExtResource("9_lwdvv")
+script = ExtResource("9_5g5eo")
+cena_tooltip = ExtResource("10_lwdvv")
+id_maquina = "fabrica_flores"
+
+[node name="BotaoOleo" type="Button" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier1/GridTier1" unique_id=1048875200]
+layout_mode = 2
+tooltip_text = " dw"
+focus_mode = 0
+theme_override_fonts/font = ExtResource("7_t8jxu")
+icon = ExtResource("12_lwdvv")
+script = ExtResource("9_5g5eo")
+cena_tooltip = ExtResource("10_lwdvv")
+id_maquina = "prensa_oleo"
+
+[node name="BotaoWind" type="Button" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier1/GridTier1" unique_id=1286918248]
 layout_mode = 2
 focus_mode = 0
 theme_override_fonts/font = ExtResource("7_t8jxu")
-text = "Expediçao"
-script = ExtResource("7_pij3u")
+icon = ExtResource("13_j2eq6")
+script = ExtResource("9_5g5eo")
+cena_tooltip = ExtResource("10_lwdvv")
+id_maquina = "wind_farm"
+
+[node name="BotaoTreeOak" type="Button" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier1/GridTier1" unique_id=523127133]
+layout_mode = 2
+focus_mode = 0
+theme_override_fonts/font = ExtResource("7_t8jxu")
+icon = ExtResource("14_0hui5")
+script = ExtResource("9_5g5eo")
+id_maquina = "tree_oak"
+
+[node name="BotaoFlor" type="Button" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier1/GridTier1" unique_id=1845776166]
+layout_mode = 2
+focus_mode = 0
+theme_override_fonts/font = ExtResource("7_t8jxu")
+icon = ExtResource("15_sxlx8")
+
+[node name="VSeparator" type="VSeparator" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers" unique_id=794766176]
+layout_mode = 2
+
+[node name="Coluna_Tier2" type="VBoxContainer" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers" unique_id=2033660602]
+layout_mode = 2
+
+[node name="LabelTier2" type="Label" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier2" unique_id=1330478005]
+layout_mode = 2
+theme_override_constants/line_spacing = 10
+theme_override_fonts/font = ExtResource("7_t8jxu")
+text = "Tier 2"
+
+[node name="GridTier2" type="GridContainer" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier2" unique_id=1153103164]
+layout_mode = 2
+columns = 2
+
+[node name="BotaoFiber" type="Button" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier2/GridTier2" unique_id=1060319781]
+layout_mode = 2
+focus_mode = 0
+theme_override_fonts/font = ExtResource("7_t8jxu")
+icon = ExtResource("16_wnkqi")
+
+[node name="BotaoFundicao" type="Button" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier2/GridTier2" unique_id=1405684318]
+layout_mode = 2
+focus_mode = 0
+theme_override_fonts/font = ExtResource("7_t8jxu")
+icon = ExtResource("17_0hui5")
+script = ExtResource("9_5g5eo")
+cena_tooltip = ExtResource("10_lwdvv")
+id_maquina = "fundicao"
+
+[node name="VSeparator2" type="VSeparator" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers" unique_id=2052272611]
+layout_mode = 2
+
+[node name="Coluna_Tier3" type="VBoxContainer" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers" unique_id=370568802]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+
+[node name="LabelTier3" type="Label" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier3" unique_id=877062943]
+layout_mode = 2
+theme_override_constants/line_spacing = 11
+theme_override_fonts/font = ExtResource("7_t8jxu")
+text = "Tier 3"
+
+[node name="GridTier3" type="GridContainer" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier3" unique_id=146752390]
+layout_mode = 2
+columns = 2
+
+[node name="BotaoSolar" type="Button" parent="CanvasLayer/MenuConstrucao/JanelaScroll/ListaDeTiers/Coluna_Tier3/GridTier3" unique_id=1187613231]
+layout_mode = 2
+focus_mode = 0
+theme_override_fonts/font = ExtResource("7_t8jxu")
+icon = ExtResource("13_j2eq6")
+script = ExtResource("9_5g5eo")
+cena_tooltip = ExtResource("10_lwdvv")
+id_maquina = "solar_panel"
 
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer" unique_id=509722936]
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 38.0
 grow_horizontal = 2
+theme = SubResource("Theme_7igo7")
 color = Color(0.13210276, 0.10156918, 0.022038385, 0.8509804)
 
 [node name="PainelTop" type="GridContainer" parent="CanvasLayer" unique_id=1206442404]
@@ -352,6 +446,7 @@ offset_left = 588.0
 offset_top = 327.0
 offset_right = 618.0
 offset_bottom = 358.0
+focus_mode = 0
 text = "📋"
 script = ExtResource("13_0crsg")
 
@@ -380,6 +475,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_g4v7s")
 layout_mode = 2
 theme_override_fonts/font = ExtResource("7_t8jxu")
 
+[connection signal="pressed" from="CanvasLayer/BotaoBuildPrincipal" to="CanvasLayer/MenuConstrucao" method="_on_botao_build_principal_pressed"]
 [connection signal="pressed" from="CanvasLayer/MenuExpedicoes/VBoxContainer/ButtonCavernaFerro" to="CanvasLayer/MenuExpedicoes" method="_on_bot_caverna_ferro_pressed"]
 [connection signal="pressed" from="CanvasLayer/MenuExpedicoes/VBoxContainer/ButtonMinaPedra" to="CanvasLayer/MenuExpedicoes" method="_on_bot_mina_pedra_pressed"]
 [connection signal="pressed" from="CanvasLayer/MenuExpedicoes/VBoxContainer/ButtonFechar" to="CanvasLayer/MenuExpedicoes" method="_on_bot_fechar_pressed"]

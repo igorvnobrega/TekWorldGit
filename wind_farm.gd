@@ -4,7 +4,7 @@ extends MaquinaBase
 func _ready() -> void:
 	custo_eletricidade = 0.0
 	custo_oleo = 1.0
-	tempo_ciclo = 10.0
+	tempo_ciclo = 1.0
 	super._ready()
 
 # 🌟 1. Esta função protege o teu inventário. Se retornar false, a MaquinaBase não gasta NADA.

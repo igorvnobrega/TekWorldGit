@@ -75,7 +75,7 @@ func colher() -> void:
 	DadosDoJogo.recurso_alterado.emit("flor_amarela", inv["flor_amarela"])
 	DadosDoJogo.recurso_alterado.emit("semente", inv["semente"])
 	
-	if randf() <= 0.10:
+	if randf() <= 0.50:
 		inv["semente"] += 1
 		DadosDoJogo.recurso_alterado.emit("semente", inv["semente"])
 	

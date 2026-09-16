@@ -25,30 +25,97 @@ var maquina_selecionada_id: String = ""
 var esta_a_construir: bool = false
 var preview_fantasma: Node2D = null  # 👻 Guarda a referência visual do fantasma
 
+# --- NOVAS VARIÁVEIS PARA as Animaçoes---
 
-# --- REFERÊNCIAS ---
 @onready var sprite: Sprite2D = $Sprite2D
+@onready var anim: AnimationPlayer = $AnimationPlayer
+
+# Guardamos a última direção do movimento para saber para onde o boneco fica a olhar quando para
+var ultima_direcao: Vector2 = Vector2.DOWN
+
+
 
 func _ready() -> void:
 	add_to_group("Jogador")
 
+# ==========================================
+# 🔄 PROCESSAMENTO DA FÍSICA
+# ==========================================
 func _physics_process(_delta: float) -> void:
+	# 1. Captura o vetor de movimento puro (já normalizado por padrão)
 	var direcao: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	
+	# 2. Aplica a velocidade baseada na direção do input
 	if direcao != Vector2.ZERO:
 		velocity = direcao * VELOCIDADE
-		if direcao.x < 0:
-			sprite.flip_h = true
-		elif direcao.x > 0:
-			sprite.flip_h = false
+		ultima_direcao = direcao # Memoriza a direção do último passo
+		processar_estados_animacao(direcao, true)
 	else:
 		velocity = Vector2.ZERO
+		processar_estados_animacao(ultima_direcao, false)
+		
+	# 3. Executa o movimento físico na grelha/mapa
 	move_and_slide()
 
+# ==========================================
+# 🎬 CONTROLADOR VISUAL (ANIMAÇÕES)
+# ==========================================
+func processar_estados_animacao(direcao_foco: Vector2, esta_a_mover: bool) -> void:
+	# Determinamos o eixo principal do olhar (se está mais focado na Horizontal ou Vertical)
+	var olhar_horizontal: bool = abs(direcao_foco.x) > abs(direcao_foco.y)
+	
+	if esta_a_mover:
+		# 🏃 CICLOS DE CAMINHAR (LOOP)
+		if olhar_horizontal:
+			if direcao_foco.x > 0:
+				anim.play("andar_direita")
+			else:
+				anim.play("andar_esquerda")
+		else:
+			if direcao_foco.y > 0:
+				anim.play("andar_frente")
+			else:
+				anim.play("andar_costas")
+	else:
+		# 🧍 POSES DE DESCANSO (IDLE - FICAR PARADO)
+		# Em vez de fazer .stop() num frame qualquer a meio do passo, 
+		# forçamos o sprite a fixar-se no frame ideal de repouso (o frame 0 de cada linha)!
+		if olhar_horizontal:
+			if direcao_foco.x > 0:
+				sprite.frame = 12 # Primeiro frame da linha Olhar Direita
+			else:
+				sprite.frame = 8  # Primeiro frame da linha Olhar Esquerda
+		else:
+			if direcao_foco.y > 0:
+				sprite.frame = 0  # Primeiro frame da linha Olhar Frente
+			else:
+				sprite.frame = 4  # Primeiro frame da linha Olhar Costas
+		
+		# Paramos a linha de tempo do AnimationPlayer para não interferir com o frame fixado
+		anim.stop()
 
 func entrar_modo_construcao(id_maquina: String) -> void:
 	var dados = DadosDoJogo.dados_construcao[id_maquina]
+	var inv = DadosDoJogo.inventario_global
 	
-	if DadosDoJogo.inventario_global[dados["custo_recurso"]] >= dados["custo_quantidade"]:
+	# 🌟 VALIDAR MÚLTIPLOS CUSTOS:
+	var pode_construir = true
+	
+	# Verifica se a máquina usa o formato novo de lista de custos
+	if "custos" in dados and dados["custos"] is Dictionary:
+		for recurso in dados["custos"]:
+			var qtd_necessaria = dados["custos"][recurso]
+			# Se o jogador não tiver o recurso ou não tiver a quantidade necessária, chumba no teste
+			if not recurso in inv or inv[recurso] < qtd_necessaria:
+				pode_construir = false
+				break # Para o ciclo imediatamente, não vale a pena continuar a verificar
+	else:
+		# Salvaguarda: Se ainda houver alguma máquina no formato antigo
+		if inv[dados["custo_recurso"]] < dados["custo_quantidade"]:
+			pode_construir = false
+
+	# Se passou no teste de todos os recursos, ativa o modo de construção!
+	if pode_construir:
 		if preview_fantasma:
 			preview_fantasma.queue_free()
 			
@@ -67,17 +134,63 @@ func entrar_modo_construcao(id_maquina: String) -> void:
 			preview_fantasma.get_node("TimerProducao").stop()
 			
 		get_parent().add_child(preview_fantasma)
-		print("Jogador: Modo construção ativo.")
+		print("Jogador: Modo construção ativo para: ", dados["nome"])
 	else:
-		print("Jogador: Recursos insuficientes!")
+		print("Jogador: Recursos insuficientes para construir esta máquina!")
 
-func _process(_delta: float) -> void:
-	# Faz o fantasma seguir o rato na grelha 16x16
-	if esta_a_construir and preview_fantasma:
+func entrar_modo_plantacao() -> void:
+	var semente_atual = DadosDoJogo.item_selecionado
+	var inv = DadosDoJogo.inventario_global
+	
+	# Se já houver algum fantasma ativo no ecrã (de uma máquina ou planta antiga), limpamos
+	if preview_fantasma:
+		preview_fantasma.queue_free()
+		preview_fantasma = null
+		
+	# Instancia dinamicamente com base nas tuas constantes de cenas já existentes
+	if semente_atual == "semente_tree_oak":
+		preview_fantasma = CENA_TREE_OAK.instantiate() as Node2D
+	elif semente_atual == "semente":
+		preview_fantasma = CENA_PLANTA.instantiate() as Node2D
+	elif semente_atual == "seed_string":
+		preview_fantasma = CENA_PLANT_FIBER.instantiate() as Node2D
+	else:
+		return # Não é uma semente válida ou nenhuma selecionada
+
+	# Aplica a transparência de 50%
+	preview_fantasma.modulate.a = 0.8
+	
+	# Congela os scripts internos para a planta não começar a crescer na mão do jogador
+	preview_fantasma.set_process(false)
+	preview_fantasma.set_physics_process(false)
+	
+	# Se a tua planta tiver algum Timer de crescimento ou produção interna, paramos
+	if preview_fantasma.has_node("TimerCrescimento"):
+		preview_fantasma.get_node("TimerCrescimento").stop()
+		
+	# Adiciona o fantasma ao mundo do jogo (pai do jogador)
+	get_parent().add_child(preview_fantasma)
+	DadosDoJogo.modo_plantacao_ativo = true
+	esta_a_construir = false # Garante que não choca com o modo de construção
+#endregion
+func _process(delta: float) -> void:
+	# LÓGICA ATUAL DO FANTASMA DE CONSTRUÇÃO OU PLANTAÇÃO
+	if (esta_a_construir or DadosDoJogo.modo_plantacao_ativo) and is_instance_valid(preview_fantasma):
 		var pos_rato = get_global_mouse_position()
+		
+		# Faz exatamente a mesma conta matemática que usas na tua função plantar_com_o_rato!
 		var x_grelha = int(floor(pos_rato.x / 16.0))
 		var y_grelha = int(floor(pos_rato.y / 16.0))
+		
+		# Posiciona o fantasma exatamente a meio do quadrado de 16x16 da tua grelha
 		preview_fantasma.global_position = Vector2((x_grelha * 16) + 8, (y_grelha * 16) + 8)
+		
+		# [EXTRA VISUAL]: Deixa o fantasma vermelho se o chão estiver ocupado!
+		var coordenada_grelha = Vector2i(x_grelha, y_grelha)
+		if DadosDoJogo.esta_celula_livre(coordenada_grelha):
+			preview_fantasma.modulate = Color(1, 1, 1, 0.5) # Cor normal semitransparente
+		else:
+			preview_fantasma.modulate = Color(1, 0, 0, 0.5) # Vermelho (bloqueado)
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
@@ -110,15 +223,22 @@ func _input(event: InputEvent) -> void:
 				cancelar_construcao()
 				get_viewport().set_input_as_handled()
 			elif DadosDoJogo.modo_plantacao_ativo:
+				# 1. Desativa os estados no DadosDoJogo
 				DadosDoJogo.modo_plantacao_ativo = false
 				DadosDoJogo.item_selecionado = ""
 				print("🚫 Modo de plantação desativado.")
+				
+				# 2. 🌟 AJUSTE CRÍTICO: Apaga o fantasma da semente imediatamente!
+				if is_instance_valid(preview_fantasma):
+					preview_fantasma.queue_free()
+					preview_fantasma = null
+					
 				get_viewport().set_input_as_handled()
 			else:
 				# 🌟 AJUSTE: Tenta interagir com a máquina se os outros modos estiverem desligados
 				if tentar_interagir_com_objeto(pos_rato):
 					get_viewport().set_input_as_handled()
-				
+
 func cancelar_construcao() -> void:
 	esta_a_construir = false
 	if preview_fantasma:
@@ -136,22 +256,49 @@ func executar_construcao(pos_rato: Vector2) -> void:
 		return
 		
 	var dados = DadosDoJogo.dados_construcao[maquina_selecionada_id]
+	var inv = DadosDoJogo.inventario_global
 	
-	if DadosDoJogo.inventario_global[dados["custo_recurso"]] >= dados["custo_quantidade"]:
+	# 🌟 1. SEGUNDA VALIDAÇÃO DE SEGURANÇA (Garante que ainda tem os recursos)
+	var pode_construir = true
+	if "custos" in dados and dados["custos"] is Dictionary:
+		for recurso in dados["custos"]:
+			var qtd_necessaria = dados["custos"][recurso]
+			if not recurso in inv or inv[recurso] < qtd_necessaria:
+				pode_construir = false
+				break
+	else:
+		if inv[dados["custo_recurso"]] < dados["custo_quantidade"]:
+			pode_construir = false
+
+	# 🌟 2. SE PASSOU NO TESTE, REALIZA A CONSTRUÇÃO E GASTA OS RECURSOS
+	if pode_construir:
+		# Remove o fantasma semitransparente do ecrã
 		if preview_fantasma:
 			preview_fantasma.queue_free()
 			preview_fantasma = null
 			
-		DadosDoJogo.adicionar_recurso(dados["custo_recurso"], -dados["custo_quantidade"])
+		# 🌟 CONSUMIR TODOS OS RECURSOS DA LISTA:
+		if "custos" in dados and dados["custos"] is Dictionary:
+			for recurso in dados["custos"]:
+				var qtd_necessaria = dados["custos"][recurso]
+				# Subtrai o valor (passando um número negativo para a tua função)
+				DadosDoJogo.adicionar_recurso(recurso, -qtd_necessaria)
+		else:
+			# Compatibilidade com o formato antigo
+			DadosDoJogo.adicionar_recurso(dados["custo_recurso"], -dados["custo_quantidade"])
+			
+		# Regista a ocupação da célula na tua grelha do mapa
 		DadosDoJogo.definir_ocupacao_celula(coordenada_grelha, true)
 		
+		# Instancia a máquina real no mundo de jogo
 		var nova_maquina = dados["cena"].instantiate()
 		nova_maquina.global_position = Vector2((x_grelha * 16) + 8, (y_grelha * 16) + 8)
 		get_parent().add_child(nova_maquina)
 		
 		esta_a_construir = false
-		print("Jogador: Máquina construída com sucesso!")
+		print("Jogador: Máquina construída com sucesso e recursos debitados!")
 	else:
+		print("Jogador: Recursos esgotaram-se no último segundo!")
 		cancelar_construcao()
 
 # --- INTERAÇÕES TRADICIONAIS (Mantém o teu código base de busca) ---
@@ -176,13 +323,17 @@ func tentar_interagir_com_objeto(posicao_clique: Vector2) -> bool:
 				obj.usar_cama()
 				return true
 
-	# 🗺️ 3. INTERAÇÃO COM MÁQUINAS (ON/OFF E RECEITAS!)
+# 🗺️ 3. INTERAÇÃO COM MÁQUINAS (ON/OFF E RECEITAS!)
 	var maquinas = get_tree().get_nodes_in_group("Maquinas")
 	for maq in maquinas:
 		# Verifica se o clique do rato atingiu o raio da máquina (16 pixéis)
 		if maq is Area2D and maq.global_position.distance_to(posicao_clique) < 16.0:
 			# Verifica se o teu personagem está perto o suficiente para tocar nela
 			if global_position.distance_to(maq.global_position) <= ALCANCE_INTERACAO:
+				
+				# 🌟 TRAVA DE SEGURANÇA: Garante que NÃO é uma planta (procura por variáveis de plantas como coordenada_chao)
+				if "coordenada_chao" in maq or maq.is_in_group("Plantas"):
+					continue # Salta este objeto e continua a procurar por máquinas reais!
 				
 				# 🌟 NOVO ENCAIXE: Se for a Fundição (ou seja, tem a variável receita_atual_id), abre o menu de receitas!
 				if "receita_atual_id" in maq:
@@ -197,6 +348,7 @@ func tentar_interagir_com_objeto(posicao_clique: Vector2) -> bool:
 					return true
 					
 	return false
+
 
 func plantar_com_o_rato(pos_rato: Vector2) -> void:
 	var inv = DadosDoJogo.inventario_global
@@ -254,3 +406,10 @@ func plantar_com_o_rato(pos_rato: Vector2) -> void:
 		if inv[semente_atual] <= 0:
 			DadosDoJogo.modo_plantacao_ativo = false
 			DadosDoJogo.item_selecionado = ""
+		if inv[semente_atual] <= 0:
+			DadosDoJogo.modo_plantacao_ativo = false
+			DadosDoJogo.item_selecionado = ""
+			# 🌟 ADICIONA ESTA LINHA AQUI PARA LIMPAR O FANTASMA:
+			if preview_fantasma:
+				preview_fantasma.queue_free()
+				preview_fantasma = null
