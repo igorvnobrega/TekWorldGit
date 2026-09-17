@@ -11,12 +11,13 @@ var modo_plantacao_ativo: bool = false
 var a_carregar_jogo: bool = false
 # --- VARIÁVEIS DE GRELHA ---
 var celulas_ocupadas: Dictionary = {}
-
+var esta_a_carregar_save: bool = false
 # --- 🌟 VARIÁVEIS DE ENERGIA (As que provavelmente faltavam!) ---
 var energia_maxima: float = 100.0
 var energia_atual: float = 100.0
-
-
+# Adiciona esta variável no topo do teu DadosDoJogo.gd (junto às outras variáveis globais):
+var ja_esta_a_carregar: bool = false
+var esta_carregar_save: bool = false
 # ==========================================================
 # 🗺️ CONFIGURAÇÕES DAS EXPEDIÇÕES / MINAS PROCEDIMENTAIS
 # ==========================================================
@@ -148,13 +149,18 @@ func definir_ocupacao_celula(coordenada_grelha: Vector2i, id_objeto: String) -> 
 
 # Dentro do teu DadosDoJogo.gd
 func limpar_todas_as_ocupacoes_da_expedicao() -> void:
-	# Se usas um dicionário para guardar as coordenadas ocupadas nas minas,
-	# vamos limpá-lo por completo para o arranque do próximo mapa!
-	if has_node("celulas_ocupadas") or typeof(celulas_ocupadas) == TYPE_DICTIONARY:
-		celulas_ocupadas.clear()
-	print("🧹 Grelha de ocupação limpa para evitar colisões fantasmas na base!")
-
-
+	print("🧹 DadosDoJogo: A limpar apenas os recursos da expedição da memória...")
+	
+	# Criamos uma lista temporária com as coordenadas que pertencem à mina
+	var chaves_para_remover = []
+	for coord in celulas_ocupadas:
+		var id = celulas_ocupadas[coord]
+		if id == "pedra_mina" or id == "ferro_mina" or id == "portal":
+			chaves_para_remover.append(coord)
+			
+	# Removemos apenas essas chaves, deixando as sementes e máquinas da base salvas!
+	for coord in chaves_para_remover:
+		celulas_ocupadas.erase(coord)
 
 
 # --- EFEITOS VISUAIS (Adicionar no fim do DadosDoJogo.gd) ---
@@ -374,90 +380,9 @@ const CAMINHO_SAVE = "user://savegame.json"
 
 # 📝 FUNÇÃO PARA GRAVAR O JOGO
 # 📝 FUNÇÃO PARA GRAVAR O JOGO
-func gravar_jogo() -> void:
-	var pos_jogador = Vector2.ZERO
-	var jogador = get_tree().get_first_node_in_group("Jogador")
-	if jogador:
-		pos_jogador = jogador.global_position
 
-	var dados_para_salvar: Dictionary = {
-		"dia_atual": dia_atual,
-		"dia_da_semana": dia_da_semana,
-		"semana_atual": semana_atual,
-		"energia_atual": energia_atual,
-		"energia_maxima": energia_maxima,
-		"inventario_global": inventario_global,
-		"expedicao_atual_selecionada": expedicao_atual_selecionada,
-		"jogador_pos_x": pos_jogador.x,
-		"jogador_pos_y": pos_jogador.y,
-		"celulas_ocupadas": converter_celulas_para_salvar()
-	}
-	
-	var ficheiro = FileAccess.open(CAMINHO_SAVE, FileAccess.WRITE)
-	if ficheiro:
-		var json_texto = JSON.stringify(dados_para_salvar)
-		ficheiro.store_string(json_texto)
-		ficheiro.close()
-		print("💾 Jogo gravado com sucesso!")
+# 📖 FUNÇÃO PARA CARREGAR O JOGO (MÉTODO LIMPO POR MUDANÇA DE CENA)
 
-# 📖 FUNÇÃO PARA CARREGAR O JOGO
-# 📖 FUNÇÃO PARA CARREGAR O JOGO (VERSÃO ULTRA-OTIMIZADA)
-# 📖 FUNÇÃO PARA CARREGAR O JOGO (VERSÃO COM DETETORES DE CONGELAMENTO)
-func carregar_jogo() -> void:
-	print("🔍 [RASTREIO 1] Iniciou a função carregar_jogo()")
-	
-	if not FileAccess.file_exists(CAMINHO_SAVE):
-		print("🔍 [RASTREIO 2] Nenhum ficheiro encontrado. A abortar.")
-		return
-		
-	var ficheiro = FileAccess.open(CAMINHO_SAVE, FileAccess.READ)
-	if ficheiro:
-		var json_texto = ficheiro.get_as_text()
-		ficheiro.close()
-		print("🔍 [RASTREIO 3] Ficheiro lido com sucesso do disco.")
-		
-		var json = JSON.new()
-		var erro = json.parse(json_texto)
-		
-		if erro == OK:
-			var dados_carregados = json.data as Dictionary
-			print("🔍 [RASTREIO 4] Parse do JSON feito com sucesso.")
-			
-			# Restaurar variáveis na memória
-			if "dia_atual" in dados_carregados: dia_atual = int(dados_carregados["dia_atual"])
-			if "dia_da_semana" in dados_carregados: dia_da_semana = int(dados_carregados["dia_da_semana"])
-			if "semana_atual" in dados_carregados: semana_atual = int(dados_carregados["semana_atual"])
-			if "energia_atual" in dados_carregados: energia_atual = float(dados_carregados["energia_atual"])
-			if "energia_maxima" in dados_carregados: energia_maxima = float(dados_carregados["energia_maxima"])
-			if "expedicao_atual_selecionada" in dados_carregados: expedicao_atual_selecionada = dados_carregados["expedicao_atual_selecionada"]
-			print("🔍 [RASTREIO 5] Variáveis numéricas restauradas na memória.")
-			
-			if "inventario_global" in dados_carregados:
-				var inv_salvo = dados_carregados["inventario_global"] as Dictionary
-				for recurso in inv_salvo:
-					inventario_global[recurso] = inv_salvo[recurso]
-			print("🔍 [RASTREIO 6] Inventário restaurado na memória.")
-			
-			if "celulas_ocupadas" in dados_carregados:
-				restaurar_celulas_carregadas(dados_carregados["celulas_ocupadas"])
-			print("🔍 [RASTREIO 7] Grelha de células ocupadas restaurada na memória.")
-			
-			# Disparo dos sinais de interface básicos
-			print("🔍 [RASTREIO 8] A disparar sinal energia_alterada...")
-			energia_alterada.emit(energia_atual, energia_maxima)
-			
-			print("🔍 [RASTREIO 9] A disparar sinal dia_alterado...")
-			dia_alterado.emit(dia_atual, get_nome_do_dia())
-			
-			print("🔍 [RASTREIO 10] A agendar o call_deferred para os recursos...")
-			call_deferred("atualizar_hud_recursos_pos_load")
-			
-			print("🔍 [RASTREIO 11] A agendar o call_deferred para o jogador/mundo...")
-			call_deferred("finalizar_carregamento_seguro", dados_carregados)
-			
-			print("🔍 [RASTREIO 12] Fim do bloco principal de carregar_jogo(). A aguardar os frames adiados...")
-		else:
-			print("❌ Erro ao ler a estrutura do ficheiro JSON!")
 
 func atualizar_hud_recursos_pos_load() -> void:
 	print("🔍 [RASTREIO 13] Iniciou atualizar_hud_recursos_pos_load()")
@@ -476,7 +401,8 @@ func finalizar_carregamento_seguro(dados_carregados: Dictionary) -> void:
 	print("🔍 [RASTREIO 17] A chamar recriar_mundo_pos_load()...")
 	recriar_mundo_pos_load()
 	print("🔍 [RASTREIO 18] Fim absoluto do carregamento de jogo!")
-
+	# 🌟 DESTRANCA A TRAVA AQUI: O jogo está seguro e pronto para receber novos inputs!
+	ja_esta_a_carregar = false 
 # ==========================================================
 # 🔄 FUNÇÃO PARA REINICIAR TUDO (NEW GAME)
 # ==========================================================
@@ -484,100 +410,101 @@ func novo_jogo() -> void:
 	print("🔄 A iniciar um Novo Jogo... A limpar dados antigos nos bastidores.")
 	
 	# 1. Apaga fisicamente o ficheiro de save antigo do teu disco
-	if FileAccess.file_exists(CAMINHO_SAVE):
-		var dir = DirAccess.open("user://")
-		if dir:
-			dir.remove("savegame.json")
-			print("🗑️ Ficheiro savegame.json antigo eliminado do disco.")
+	if FileAccess.file_exists(CAMINHO_SAVE_RES):
+		DirAccess.remove_absolute(CAMINHO_SAVE_RES)
+		
+		print("🗑️ Ficheiro savegame.json antigo eliminado do disco.")
 
-	# 2. Reseta o calendário e o tempo global
-	dia_atual = 1
-	dia_da_semana = 1
-	semana_atual = 1
-	
-	# 3. Reseta a tua energia para os valores iniciais
-	energia_maxima = 100.0
-	energia_atual = 100.0
-	
-	# 4. Limpa por completo a grelha de ocupações da base
-	celulas_ocupadas.clear()
-	
-	# 5. Reseta o controlo de expedições e limpa a mochila temporária
-	expedicao_atual_selecionada = "mina_inicial"
-	limpar_mochila_expedicao()
 
-	# 6. REPOE AS QUANTIDADES INICIAIS DO TEU INVENTÁRIO GLOBAL
-	inventario_global = {
-		"flor_amarela": 20,
-		"semente": 20,
-		"oleo_vegetal": 50,
-		"eletricidade": 100,
-		"semente_tree_oak": 100,
-		"madeira_oak": 100,
-		"pedra": 0,
-		"cristal": 0,
-		"ore_iron": 110,
-		"string": 0,
-		"plant_string": 0,
-		"seed_string": 10,
-		"oak_plank": 0,
-		"charcoal": 0,
-		"ingot_iron": 0
-	}
 
-	# 7. 🔥 SINCRONIZAÇÃO COMPLETA DA INTERFACE (HUD)
-	# Forçamos todos os teus menus e contadores a lerem os números de reset
+#endregion
+# No final do teu DadosDoJogo.gd
+const CAMINHO_SAVE_RES = "user://savegame.tres"
+
+# 📝 GRAVAR JOGO NATIVO (SAVE)
+func gravar_jogo() -> void:
+	var save = DadosGuardados.new()
+	
+	# Copiamos as variáveis numéricas diretas
+	save.dia_atual = dia_atual
+	save.dia_da_semana = dia_da_semana
+	save.semana_atual = semana_atual
+	save.energia_atual = energia_atual
+	save.energia_maxima = energia_maxima
+	save.expedicao_atual_selecionada = expedicao_atual_selecionada
+	
+	# Guardamos os dicionários nativos (O Godot 4 aceita o Vector2i direto aqui!)
+	save.inventario_global = inventario_global.duplicate()
+	save.celulas_ocupadas = celulas_ocupadas.duplicate()
+	
+	# Guardamos a posição do jogador
+	var jogador = get_tree().get_first_node_in_group("Jogador")
+	if jogador:
+		save.jogador_pos = jogador.global_position
+
+	# O comando mágico do Godot que grava o ficheiro binário ultra-rápido
+	var erro = ResourceSaver.save(save, CAMINHO_SAVE_RES)
+	if erro == OK:
+		print("💾 Jogo gravado com sucesso nativo (.tres)!")
+	else:
+		print("❌ Erro ao gravar o Resource: ", erro)
+
+# 📖 CARREGAR JOGO NATIVO (LOAD)
+func carregar_jogo() -> void:
+	if not ResourceLoader.exists(CAMINHO_SAVE_RES):
+		print("⚠️ Nenhum savegame nativo encontrado.")
+		return
+		
+	# Carrega o objeto inteiro para a memória de uma só vez
+	var save = ResourceLoader.load(CAMINHO_SAVE_RES) as DadosGuardados
+	if not save:
+		print("❌ Erro ao carregar o ficheiro .tres!")
+		return
+		
+	# Restauramos as variáveis numéricas
+	dia_atual = save.dia_atual
+	dia_da_semana = save.dia_da_semana
+	semana_atual = save.semana_atual
+	energia_atual = save.energia_atual
+	energia_maxima = save.energia_maxima
+	expedicao_atual_selecionada = save.expedicao_atual_selecionada
+	
+	# Restauramos os dicionários intactos
+	inventario_global = save.inventario_global.duplicate()
+	celulas_ocupadas = save.celulas_ocupadas.duplicate()
+	
+	# Avisamos o sistema para atualizar os gráficos do HUD
+	energia_alterada.emit(energia_atual, energia_maxima)
+	dia_alterado.emit(dia_atual, get_nome_do_dia())
 	for recurso in inventario_global:
 		recurso_alterado.emit(recurso, inventario_global[recurso])
 		
-	energia_alterada.emit(energia_atual, energia_maxima)
-	dia_alterado.emit(dia_atual, get_nome_do_dia())
-	
-	# 8. Sorteia um novo objetivo fresco para a primeira semana do jogo
-	gerar_nova_taxa_semanal()
-	
-	print("🎮 Novo Jogo inicializado com sucesso!")
+	# Reiniciamos a cena principal para limpar fantasmas e recriar o mundo de forma nativa e passiva!
+	get_tree().reload_current_scene()
+	print("📖 Jogo carregado na memória. A reiniciar a cena para aplicar...")
 
-# Função auxiliar que reconstrói os objetos no mapa com base no save
+# 🏗️ RECONSTRUTOR PASSIVO (Para rodar quando o mapa nasce limpo)
 func recriar_mundo_pos_load() -> void:
 	var cena_raiz = get_tree().current_scene
 	if not cena_raiz: return
 	
-	# 1. Limpar objetos antigos do chão
-	for no_antigo in get_tree().get_nodes_in_group("ObjetosDoMundo"):
-		no_antigo.queue_free()
-		
-	# 2. Vamos ler o ficheiro JSON outra vez apenas para extrair as fases de crescimento
-	if not FileAccess.file_exists(CAMINHO_SAVE): return
-	var ficheiro = FileAccess.open(CAMINHO_SAVE, FileAccess.READ)
-	var dados_json = JSON.parse_string(ficheiro.get_as_text())
-	ficheiro.close()
+	print("🏗️ A repor objetos no chão baseando na grelha carregada...")
 	
-	if not dados_json or not "celulas_ocupadas" in dados_json: return
-	var celulas_salvas = dados_json["celulas_ocupadas"] as Dictionary
-	
-	# 3. Reconstruir o mundo aplicando os estágios salvos
-	for chave_texto in celulas_salvas:
-		var partes = chave_texto.split(",")
-		var coord = Vector2i(int(partes[0]), int(partes[1]))
+	for coord in celulas_ocupadas:
+		var id = celulas_ocupadas[coord]
 		
-		var dados_item = celulas_salvas[chave_texto]
-		if not dados_item is Dictionary: continue
-		
-		var id = dados_item["id"]
-		var fase = int(dados_item["fase"])
-		
-		if id == "pedra_mina" or id == "ferro_mina" or id == "portal":
+		# Ignora dados residuais das minas
+		if typeof(id) != TYPE_STRING or id == "pedra_mina" or id == "ferro_mina" or id == "portal" or id == "":
 			continue
 			
-		# Se for uma Máquina
+		# Recria as Máquinas
 		if id in dados_construcao:
 			var nova_maquina = dados_construcao[id]["cena"].instantiate()
 			nova_maquina.global_position = Vector2((coord.x * 16) + 8, (coord.y * 16) + 8)
 			nova_maquina.add_to_group("ObjetosDoMundo")
 			cena_raiz.add_child(nova_maquina)
 			
-		# Se for uma Planta (Semente)
+		# Recria as Sementes/Plantas
 		elif id == "semente" or id == "semente_tree_oak" or id == "seed_string":
 			var chao_base = cena_raiz.get_node_or_null("Chao") as TileMapLayer
 			if chao_base: chao_base.set_cell(coord, 0, Vector2i(1, 0))
@@ -592,60 +519,5 @@ func recriar_mundo_pos_load() -> void:
 				if nova_planta:
 					nova_planta.global_position = Vector2((coord.x * 16) + 8, (coord.y * 16) + 8)
 					if "coordenada_chao" in nova_planta: nova_planta.coordenada_chao = coord
-					
-					# 🌟 INJETA A MEMÓRIA DA FASE:
-					# Passamos o estágio exato guardado ANTES de adicionar à árvore,
-					# cortando qualquer bug ou loop infinito no _ready() da planta!
-					if nova_planta.has_method("carregar_estagio"):
-						nova_planta.carregar_estagio(fase)
-					elif "estagio_crescimento" in nova_planta:
-						nova_planta.estagio_crescimento = fase
-						
 					nova_planta.add_to_group("ObjetosDoMundo")
 					cena_raiz.add_child(nova_planta)
-
-# ==========================================================
-# 🔄 FUNÇÕES AUXILIARES DE CONVERSÃO DE DADOS (VECTOR2I PARA STRING)
-# ==========================================================
-
-func converter_celulas_para_salvar() -> Dictionary:
-	var dicionario_texto = {}
-	for coord in celulas_ocupadas:
-		var id_objeto = celulas_ocupadas[coord]
-		
-		if typeof(id_objeto) == TYPE_STRING and id_objeto != "":
-			# Procuramos se existe o nó real no mundo para ler a fase dele
-			var fase_atual = 0
-			
-			# Fazemos uma busca rápida no mapa para encontrar a planta desta coordenada
-			for no in get_tree().get_nodes_in_group("ObjetosDoMundo"):
-				if "coordenada_chao" in no and no.coordenada_chao == coord:
-					if "estagio_crescimento" in no:
-						fase_atual = no.estagio_crescimento
-						break
-			
-			# Guardamos a coordenada apontando para um dicionário com o ID e a Fase!
-			var chave_texto = str(coord.x) + "," + str(coord.y)
-			dicionario_texto[chave_texto] = {
-				"id": id_objeto,
-				"fase": fase_atual
-			}
-	return dicionario_texto
-
-func restaurar_celulas_carregadas(dicionario_texto: Dictionary) -> void:
-	celulas_ocupadas.clear()
-	for chave_texto in dicionario_texto:
-		var partes = chave_texto.split(",")
-		if partes.size() == 2:
-			var x = int(partes[0])
-			var y = int(partes[1])
-			var coord_vector = Vector2i(x, y)
-			
-			# Lemos o formato novo de dicionário interno do JSON
-			var dados_objeto = dicionario_texto[chave_texto]
-			if dados_objeto is Dictionary:
-				celulas_ocupadas[coord_vector] = dados_objeto["id"]
-				# Guardamos a fase temporariamente na memória global para o reconstrutor ler a seguir
-				# Criamos um dicionário auxiliar dinâmico no DadosDoJogo se precisares, ou tratamos direto no recriar!
-
-#endregion

@@ -8,27 +8,58 @@ var cena_expedicao_blueprint = preload("res://CenaExpedicao.tscn")
 
 # No teu script principal do mapa/mundo (ex: mundo.gd):
 
+# Dentro do teu mundo.gd:
+
+# No teu mundo.gd
+# mundo.gd
 func _ready() -> void:
-	# ==========================================================
-	# 💉 VACINA VISUAL DE SEGURANÇA (PÓS-LOAD)
-	# ==========================================================
-	# Quando a cena renasce após o F9, forçamos os sinais globais 
-	# a disparar UMA ÚNICA VEZ para atualizar o teu HUD de forma limpa,
-	# mas fazemo-lo com um atraso de 1 frame para o Godot já ter estabilizado!
+	# Aguarda os frames de segurança para a cena assentar no motor gráfico
+	await get_tree().process_frame
+	await get_tree().physics_frame
 	
-	await get_tree().process_frame # Espera 1 frame de segurança
+	# 🌟 FORÇAR O MUNDO A SAIR DE QUALQUER ESTADO DE PAUSA ANTERIOR:
+	process_mode = PROCESS_MODE_INHERIT
+	get_tree().paused = false
 	
-	# 1. Atualiza a tua barra de energia do topo
+	# Se existir um savegame gravado, vamos ler a posição e recriar o mundo!
+	if ResourceLoader.exists(DadosDoJogo.CAMINHO_SAVE_RES):
+		var save = ResourceLoader.load(DadosDoJogo.CAMINHO_SAVE_RES) as DadosGuardados
+		if save:
+			print("🏡 Mundo.gd: A detetar save nativo. A restaurar jogador e grelhas...")
+			
+			# 1. Repõe a posição do teu personagem
+			var jogador = get_tree().get_first_node_in_group("Jogador")
+			if jogador and save.jogador_pos != Vector2.ZERO:
+				jogador.global_position = save.jogador_pos
+				
+				# 🌟 DESBLOQUEAR O PROPRIO JOGADOR VISUAL E FÍSICO:
+				jogador.process_mode = PROCESS_MODE_INHERIT
+				jogador.velocity = Vector2.ZERO
+				
+				# 🌟 LIMPAR FANTASMAS DA MÃO:
+				# Se o jogador gravou o jogo enquanto tinha o fantasma semitransparente na mão,
+				# limpamos as variáveis para ele não nascer trancado no modo de construção!
+				if "esta_a_construir" in jogador: jogador.esta_a_construir = false
+				if "preview_fantasma" in jogador and is_instance_valid(jogador.preview_fantasma):
+					jogador.preview_fantasma.queue_free()
+					jogador.preview_fantasma = null
+				DadosDoJogo.modo_plantacao_ativo = false
+				DadosDoJogo.item_selecionado = ""
+				
+				print("🚶 Jogador reposicionado e DESBLOQUEADO para: ", jogador.global_position)
+				
+			# 2. Chama a reconstrução estável das máquinas e sementes
+			DadosDoJogo.recriar_mundo_pos_load()
+			
+	# ==========================================================
+	# 🧼 ATUALIZAÇÃO DO HUD DO ECRA
+	# ==========================================================
 	DadosDoJogo.energia_alterada.emit(DadosDoJogo.energia_atual, DadosDoJogo.energia_maxima)
-	
-	# 2. Atualiza o teu contador de dias do ecrã
 	DadosDoJogo.dia_alterado.emit(DadosDoJogo.dia_atual, DadosDoJogo.get_nome_do_dia())
-	
-	# 3. Atualiza todos os teus contadores de recursos azuis do HUD do topo
 	for recurso in DadosDoJogo.inventario_global:
 		DadosDoJogo.recurso_alterado.emit(recurso, DadosDoJogo.inventario_global[recurso])
 		
-	print("🧼 HUD vacinado e atualizado com sucesso após o carregamento da cena!")
+	print("🧼 HUD atualizado com sucesso após o carregamento nativo!")
 
 
 func viajar_para_expedicao() -> void:

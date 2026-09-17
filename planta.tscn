@@ -17,6 +17,12 @@ texture = ExtResource("2_jgas5")
 hframes = 2
 frame = 1
 
+[node name="IndicadorOnOff" type="Sprite2D" parent="." unique_id=610112716 groups=["ObjetosDoMundo"]]
+y_sort_enabled = true
+texture = ExtResource("2_jgas5")
+hframes = 2
+frame = 1
+
 [node name="Timer" type="Timer" parent="." unique_id=964323706]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1861149282]

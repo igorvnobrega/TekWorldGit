@@ -239,16 +239,24 @@ func _input(event: InputEvent) -> void:
 				if tentar_interagir_com_objeto(pos_rato):
 					get_viewport().set_input_as_handled()
 		# Se carregares na tecla F5, o jogo grava!
-	if event is InputEventKey and event.pressed and event.keycode == KEY_F5:
-		DadosDoJogo.gravar_jogo()
-		
-	# Se carregares na tecla F9, o jogo carrega!
-	if event is InputEventKey and event.pressed and event.keycode == KEY_F9:
-		DadosDoJogo.carregar_jogo()
-	if event is InputEventKey and event.pressed and event.keycode == KEY_F4:
-		DadosDoJogo.novo_jogo()
-		get_tree().reload_current_scene()
-		
+		# 🌟 SEGURANÇA 1: Só deteta se for o exato momento em que carregas na tecla,
+	# ignorando o sinal se ficares a segurar o botão com o dedo (is_echo)!
+	if event is InputEventKey and event.pressed and not event.is_echo():
+		match event.keycode:
+			KEY_F4: # Ou KEY_R
+				print("Atalho: Tecla Novo Jogo detectada.")
+				DadosDoJogo.novo_jogo()
+				get_tree().reload_current_scene()
+				
+			KEY_F5: # Ou KEY_G
+				print("Atalho: Tecla Gravar detectada.")
+				DadosDoJogo.gravar_jogo()
+				
+			KEY_F9: # Ou KEY_C
+				# 🌟 SEGURANÇA 2: Consumimos o input para o Godot saber que ele morreu aqui 
+				# e não o passar para o frame seguinte!
+				get_viewport().set_input_as_handled()
+				DadosDoJogo.carregar_jogo()
 func cancelar_construcao() -> void:
 	esta_a_construir = false
 	if preview_fantasma:
@@ -304,7 +312,8 @@ func executar_construcao(pos_rato: Vector2) -> void:
 		var nova_maquina = dados["cena"].instantiate()
 		nova_maquina.global_position = Vector2((x_grelha * 16) + 8, (y_grelha * 16) + 8)
 		get_parent().add_child(nova_maquina)
-		
+		nova_maquina.add_to_group("ObjetosDoMundo")
+
 		esta_a_construir = false
 		print("Jogador: Máquina construída com sucesso e recursos debitados!")
 	else:
@@ -447,6 +456,7 @@ func plantar_com_o_rato(pos_rato: Vector2) -> void:
 		DadosDoJogo.definir_ocupacao_celula(coordenada_grelha, semente_atual)
 		DadosDoJogo.criar_texto_energia(CUSTO_ENERGIA_PLANTAR, nova_planta.global_position)
 		get_parent().add_child(nova_planta)
+		nova_planta.add_to_group("ObjetosDoMundo")
 		
 		if inv[semente_atual] <= 0:
 			DadosDoJogo.modo_plantacao_ativo = false

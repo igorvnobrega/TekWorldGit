@@ -9,13 +9,19 @@ class_name MaquinaBase
 
 var timer_interno: Timer
 var maquina_ligada: bool = true
-@onready var indicador_visual: Sprite2D = $IndicadorOnOff 
 
+
+# MaquinaBase.gd
 func _ready() -> void:
-	# # 🌟 CORREÇÃO 1: Adiciona a máquina ao grupo para o jogador conseguir clicar!
+	# 1. Adiciona a máquina ao grupo para o jogador conseguir clicar
 	add_to_group("Maquinas")
 	
-	# Cria e configura o Timer automaticamente
+	# 🌟 VACINA ANTIMENTIRA CONTRA CONGELAMENTO PÓS-LOAD:
+	# Forçamos a máquina a esperar 1 frame completo de segurança para a cena estabilizar,
+	# e só depois é que criamos os relógios e iniciamos a produção!
+	await get_tree().process_frame
+	
+	# Cria e configura o Timer automaticamente de forma segura
 	timer_interno = Timer.new()
 	timer_interno.wait_time = tempo_ciclo
 	timer_interno.one_shot = false
@@ -27,7 +33,7 @@ func _ready() -> void:
 	atualizar_indicador_visual()
 
 # Referência ao novo nó que vai flutuar no topo do teu pixel art
-@onready var icone_producao: Sprite2D = $IconeProducao
+
 
 # 🌟 Dicionário com os caminhos reais dos teus ícones individuais!
 # (⚠️ AJUSTA OS CAMINHOS entre aspas para as pastas exatas onde guardas as tuas imagens!)
@@ -38,20 +44,7 @@ const ICONES = {
 
 # Função automática que altera a textura do balão flutuante
 func atualizar_icone_produto(id_receita: String) -> void:
-	if not is_instance_valid(icone_producao):
-		print("⚠️ Erro: O nó IconeProducao não foi encontrado nesta máquina!")
-		return
-		
-	# Se a máquina não tiver receita ativa ("nenhuma" ou vazia), esconde o balão
-	if id_receita == "nenhuma" or id_receita == "" or not ICONES.has(id_receita):
-		icone_producao.visible = false
-		return
-		
-	# Se a receita for válida, injeta a imagem e torna-a visível por cima do teto
-	icone_producao.texture = ICONES[id_receita]
-	icone_producao.visible = true
-	print("✨ SUCESSO: Ícone atualizado visualmente para: ", id_receita)
-
+	pass
 # 🌟 A FUNÇÃO QUE FALTAVA (Escrita fora do _ready(), alinhada à parede esquerda!):
 func alternar_estado() -> void:
 	maquina_ligada = !maquina_ligada # Inverte o valor (se era true passa a false)
@@ -71,12 +64,7 @@ func alternar_estado() -> void:
 
 # 🌟 4. Nova função para gerir os frames da tua imagem (Vermelho/Verde)
 func atualizar_indicador_visual() -> void:
-	if is_instance_valid(indicador_visual):
-		if maquina_ligada:
-			indicador_visual.frame = 1 # 🟢 Frame Verde (Luz Ligada)
-		else:
-			indicador_visual.frame = 0 # 🔴 Frame Vermelho (Luz Desligada)
-
+	pass
 func _processar_ciclo_maquina() -> void:
 	# 🌟 CORREÇÃO 2: Se a máquina estiver desligada no interruptor, 
 	# aborta imediatamente e não gasta nem produz nada!
