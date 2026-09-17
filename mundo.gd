@@ -6,6 +6,31 @@ extends Node2D
 # Carrega o molde da tua cena de expedição que criámos
 var cena_expedicao_blueprint = preload("res://CenaExpedicao.tscn")
 
+# No teu script principal do mapa/mundo (ex: mundo.gd):
+
+func _ready() -> void:
+	# ==========================================================
+	# 💉 VACINA VISUAL DE SEGURANÇA (PÓS-LOAD)
+	# ==========================================================
+	# Quando a cena renasce após o F9, forçamos os sinais globais 
+	# a disparar UMA ÚNICA VEZ para atualizar o teu HUD de forma limpa,
+	# mas fazemo-lo com um atraso de 1 frame para o Godot já ter estabilizado!
+	
+	await get_tree().process_frame # Espera 1 frame de segurança
+	
+	# 1. Atualiza a tua barra de energia do topo
+	DadosDoJogo.energia_alterada.emit(DadosDoJogo.energia_atual, DadosDoJogo.energia_maxima)
+	
+	# 2. Atualiza o teu contador de dias do ecrã
+	DadosDoJogo.dia_alterado.emit(DadosDoJogo.dia_atual, DadosDoJogo.get_nome_do_dia())
+	
+	# 3. Atualiza todos os teus contadores de recursos azuis do HUD do topo
+	for recurso in DadosDoJogo.inventario_global:
+		DadosDoJogo.recurso_alterado.emit(recurso, DadosDoJogo.inventario_global[recurso])
+		
+	print("🧼 HUD vacinado e atualizado com sucesso após o carregamento da cena!")
+
+
 func viajar_para_expedicao() -> void:
 	# 1. Esconde e pausa visualmente a base (mas as máquinas continuam a processar!)
 	base_node.visible = false

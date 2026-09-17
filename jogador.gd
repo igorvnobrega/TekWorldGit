@@ -238,7 +238,17 @@ func _input(event: InputEvent) -> void:
 				# 🌟 AJUSTE: Tenta interagir com a máquina se os outros modos estiverem desligados
 				if tentar_interagir_com_objeto(pos_rato):
 					get_viewport().set_input_as_handled()
-
+		# Se carregares na tecla F5, o jogo grava!
+	if event is InputEventKey and event.pressed and event.keycode == KEY_F5:
+		DadosDoJogo.gravar_jogo()
+		
+	# Se carregares na tecla F9, o jogo carrega!
+	if event is InputEventKey and event.pressed and event.keycode == KEY_F9:
+		DadosDoJogo.carregar_jogo()
+	if event is InputEventKey and event.pressed and event.keycode == KEY_F4:
+		DadosDoJogo.novo_jogo()
+		get_tree().reload_current_scene()
+		
 func cancelar_construcao() -> void:
 	esta_a_construir = false
 	if preview_fantasma:
@@ -288,7 +298,7 @@ func executar_construcao(pos_rato: Vector2) -> void:
 			DadosDoJogo.adicionar_recurso(dados["custo_recurso"], -dados["custo_quantidade"])
 			
 		# Regista a ocupação da célula na tua grelha do mapa
-		DadosDoJogo.definir_ocupacao_celula(coordenada_grelha, true)
+		DadosDoJogo.definir_ocupacao_celula(coordenada_grelha, maquina_selecionada_id)
 		
 		# Instancia a máquina real no mundo de jogo
 		var nova_maquina = dados["cena"].instantiate()
@@ -364,20 +374,51 @@ func plantar_com_o_rato(pos_rato: Vector2) -> void:
 	var y_grelha = int(floor(pos_rato.y / 16.0))
 	var coordenada_grelha = Vector2i(x_grelha, y_grelha)
 	
-	if DadosDoJogo.esta_celula_livre(coordenada_grelha) and DadosDoJogo.gastar_energia(CUSTO_ENERGIA_PLANTAR):
+	# ==========================================================
+	# 🌾 LISTA DE TODAS AS TUAS TERRAS ARADAS INICIAIS
+	# ==========================================================
+	# Adiciona aqui as coordenadas de todas as terras limpas onde se pode plantar
+	var solos_validos: Array[Vector2i] = [
+		Vector2i(0, 0),  # Terra Arada normal (a tua antiga!)
+		Vector2i(2, 0),  # Exemplo: Nova Terra Arada Escura do teu novo Tileset
+		Vector2i(3, 0),
+		Vector2i(4, 0),  # Terra Arada normal (a tua antiga!)
+		Vector2i(5, 0),
+		Vector2i(6, 0),
+		Vector2i(0, 1),  # Terra Arada normal (a tua antiga!)
+		Vector2i(1, 1),
+		Vector2i(2, 1),  # Terra Arada normal (a tua antiga!)
+		Vector2i(3, 1),
+		Vector2i(4, 1),  # Terra Arada normal (a tua antiga!)
+		Vector2i(5, 1),  # Exemplo: Nova Terra com Adubo
+		Vector2i(6, 1)
+	]
+	
+	var chao = get_parent().get_node("Chao") as TileMapLayer
+	if not chao:
+		print("Erro: Não encontrou o nó Chao!")
+		return
+		
+	# Lemos que tipo de terra limpa está debaixo do rato agora
+	var solo_original = chao.get_cell_atlas_coords(coordenada_grelha)
+	
+	# 🔍 IMPRESSÃO DE DIAGNÓSTICO (Caso não consigas plantar, olha para a consola!)
+	print("Jogador: Clicou no Solo com as coordenadas do Atlas: ", solo_original)
+	
+	# Só avança se a célula estiver livre de objetos E for um solo válido E gastar energia
+	if DadosDoJogo.esta_celula_livre(coordenada_grelha) and solo_original in solos_validos and DadosDoJogo.gastar_energia(CUSTO_ENERGIA_PLANTAR):
 		
 		inv[semente_atual] -= 1
 		DadosDoJogo.recurso_alterado.emit(semente_atual, inv[semente_atual])
 		
-		var chao = get_parent().get_node("Chao") as TileMapLayer
-		if chao:
-			chao.set_cell(coordenada_grelha, 0, Vector2i(1, 0))
-		else:
-			print("chao errado")
-			return
-		# 🌟 SELEÇÃO DINÂMICA E SEGURA DA CENA:
+		# 🌟 REGRA AUTOMÁTICA DE SEMENTE:
+		# Avança uma linha para baixo (Y + 1) para mostrar o grafismo com a semente por cima.
+		var solo_com_semente = Vector2i(solo_original.x, solo_original.y + 1)
+				# 🌟 CORREÇÃO AQUI: Força o chão a mudar SEMPRE para o teu tile (1, 0)
+		chao.set_cell(coordenada_grelha, 0, Vector2i(1, 0))
+		
+		
 		var nova_planta = null
-
 		if semente_atual == "semente_tree_oak":
 			nova_planta = CENA_TREE_OAK.instantiate()
 		elif semente_atual == "semente":
@@ -388,28 +429,25 @@ func plantar_com_o_rato(pos_rato: Vector2) -> void:
 			print("⚠️ Erro: Semente desconhecida na mão: ", semente_atual)
 			return
 	
-		# Posiciona e configura a única planta criada
 		nova_planta.global_position = Vector2((x_grelha * 16) + 8, (y_grelha * 16) + 8)
 		
-		# 🌟 PASSA A COORDENADA PARA A PLANTA SE LEMBRAR DELA
+		# Passa as coordenadas para a planta
 		if "coordenada_chao" in nova_planta:
 			nova_planta.coordenada_chao = coordenada_grelha
+			
+		# 🌟 TRUQUE DE MEMÓRIA DA PLANTA:
+		# Guardamos o solo_original dentro da planta para que ela saiba exatamente 
+		# que tipo de terra tem de repor quando for colhida!
+		if "solo_original" in nova_planta:
+			nova_planta.solo_original = solo_original
 			
 		if nova_planta.has_method("definir_posicao_na_grelha"):
 			nova_planta.definir_posicao_na_grelha(coordenada_grelha)
 			
-		# Regista a ocupação e adiciona à cena
-		DadosDoJogo.definir_ocupacao_celula(coordenada_grelha, true)
+		DadosDoJogo.definir_ocupacao_celula(coordenada_grelha, semente_atual)
 		DadosDoJogo.criar_texto_energia(CUSTO_ENERGIA_PLANTAR, nova_planta.global_position)
 		get_parent().add_child(nova_planta)
 		
 		if inv[semente_atual] <= 0:
 			DadosDoJogo.modo_plantacao_ativo = false
 			DadosDoJogo.item_selecionado = ""
-		if inv[semente_atual] <= 0:
-			DadosDoJogo.modo_plantacao_ativo = false
-			DadosDoJogo.item_selecionado = ""
-			# 🌟 ADICIONA ESTA LINHA AQUI PARA LIMPAR O FANTASMA:
-			if preview_fantasma:
-				preview_fantasma.queue_free()
-				preview_fantasma = null

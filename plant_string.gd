@@ -93,7 +93,7 @@ func colher() -> void:
 			coordenada_chao = chao.local_to_map(global_position)
 		
 		# Liberta a célula no sistema global do teu jogo
-		DadosDoJogo.definir_ocupacao_celula(coordenada_chao, false)
+		DadosDoJogo.definir_ocupacao_celula(coordenada_chao, "")
 		
 		# Configura o tempo que a terra fica visível (ex: 3 segundos)
 		var segundos_em_terra: float = 3.0 

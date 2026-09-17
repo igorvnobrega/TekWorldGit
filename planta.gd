@@ -8,6 +8,9 @@ var estado_atual: Estado = Estado.CRESCENDO
 var coordenada_chao: Vector2i = Vector2i(-1, -1) 
 # Variável de controlo de proximidade
 var jogador_na_area: bool = false
+var solo_original: Vector2i = Vector2i(0, 0) # Começa em (0,0) por padrão
+var estagio_crescimento: int = 0 # 0 = semente/broto, 1 = jovem, 2 = madura
+
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -82,14 +85,13 @@ func colher() -> void:
 	print("🌸 Colheita realizada com sucesso! A libertar o espaço...")
 
 	# 2. LIBERTA O ESPAÇO IMEDIATAMENTE
-	var chao = get_parent().get_node_or_null("Chao") as TileMapLayer
-	if chao:
-		# 🌟 GARANTIA: Se a coordenada ainda for a padrão, calcula imediatamente antes de avançar
-		if coordenada_chao == Vector2i(-1, -1):
-			coordenada_chao = chao.local_to_map(global_position)
-		
+	var chao = get_parent().get_node("Chao") as TileMapLayer
+	if chao and coordenada_chao != Vector2i(-1, -1):
+	# 🌟 DEVOLVE A TERRA EXATA QUE ESTAVA ANTES!
+	# Se nasceu em terra escura (2,0), volta a ser terra escura (2,0).
+		chao.set_cell(coordenada_chao, 0, solo_original) 
 		# Liberta a célula no sistema global do teu jogo
-		DadosDoJogo.definir_ocupacao_celula(coordenada_chao, false)
+		DadosDoJogo.definir_ocupacao_celula(coordenada_chao, "")
 		
 		# Configura o tempo que a terra fica visível (ex: 3 segundos)
 		var segundos_em_terra: float = 3.0 
@@ -113,3 +115,14 @@ func colher() -> void:
 
 	# 3. APAGA A PLANTA IMEDIATAMENTE
 	queue_free()
+func carregar_estagio(fase: int) -> void:
+	estagio_crescimento = fase
+	
+	# 🌟 ATUALIZA O VISUAL:
+	# Ajusta as linhas abaixo de acordo com o teu sistema visual!
+	# Se usas AnimatedSprite2D, mudas o frame ou a animação:
+	if has_node("AnimatedSprite2D"):
+		$AnimatedSprite2D.frame = fase
+	# Se usas Sprite2D normal com frames:
+	elif has_node("Sprite2D"):
+		$Sprite2D.frame = fase

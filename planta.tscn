@@ -11,7 +11,7 @@ y_sort_enabled = true
 script = ExtResource("1_jgas5")
 distancia_maxima_interacao = 80.0
 
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=883959852]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=883959852 groups=["ObjetosDoMundo"]]
 y_sort_enabled = true
 texture = ExtResource("2_jgas5")
 hframes = 2

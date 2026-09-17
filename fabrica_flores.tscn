@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ncjwqnreik5c"]
 
 [ext_resource type="Script" uid="uid://b7cu32xi6vp61" path="res://fabrica_flores.gd" id="1_kexrv"]
-[ext_resource type="Texture2D" uid="uid://clsj20ukq0pi6" path="res://assets/plantFarm.png" id="2_7ijnl"]
+[ext_resource type="Texture2D" uid="uid://cki3pfgyw5wnd" path="res://assets/plantFarm-export.png" id="2_7ijnl"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kexrv"]
 size = Vector2(16, 32)
@@ -9,7 +9,7 @@ size = Vector2(16, 32)
 [node name="FabricaFlores" type="Area2D" unique_id=297224131]
 script = ExtResource("1_kexrv")
 
-[node name="IndicadorOnOff" type="Sprite2D" parent="." unique_id=545826883]
+[node name="IndicadorOnOff" type="Sprite2D" parent="." unique_id=545826883 groups=["ObjetosDoMundo"]]
 texture = ExtResource("2_7ijnl")
 hframes = 2
 

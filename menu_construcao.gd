@@ -57,6 +57,9 @@ func _ready() -> void:
 	# 🌟 ADICIONA ESTA LINHA NO FIM DO _READY:
 	# Sempre que o inventário global mudar, o menu atualiza os botões sozinho!
 	DadosDoJogo.recurso_alterado.connect(func(_nome, _qtd): 
+		# 🌟 Se o jogo estiver a fazer Load, ignora o sinal e não corre a função!
+		if DadosDoJogo.a_carregar_jogo: 
+			return
 		if visible: 
 			atualizar_disponibilidade_botoes() )
 			
@@ -104,6 +107,11 @@ func alternar_visibilidade_menu() -> void:
 	visible = !visible
 	if visible:
 		print("🪟 Menu de Construção ABERTO.")
+				# 🌟 REGRA DE COABITAÇÃO (A que faltava!): 
+		# Se o menu de plantação estiver aberto, força-o a fechar!
+		var menu_plant = get_parent().get_node_or_null("MenuPlantacao")
+		if menu_plant: 
+			menu_plant.visible = false
 		# 🌟 CHAMA O EFEITO AQUI: Atualiza as cores assim que o painel aparece!
 		atualizar_disponibilidade_botoes()
 		# Opcional: Garante que faz reset ao scroll para o início ao abrir
